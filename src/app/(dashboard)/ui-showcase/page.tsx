@@ -1,9 +1,23 @@
 'use client';
 
+import { Globe } from "@/components/magicui/globe";
+
 export default function UIShowcasePage() {
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">UI Component Showcase</h1>
+      
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">MagicUI Components</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="p-6 border rounded-lg">
+            <h3 className="text-lg font-medium mb-4">Globe Component</h3>
+            <div className="relative aspect-square w-full max-w-[400px] mx-auto">
+              <Globe />
+            </div>
+          </div>
+        </div>
+      </section>
       
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Buttons</h2>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { MSWInitializer } from "@/mocks/initialize";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Initialize MSW in development environment */}
+        {process.env.NODE_ENV === 'development' && <MSWInitializer />}
         {children}
       </body>
     </html>

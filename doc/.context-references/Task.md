@@ -16,6 +16,8 @@ The project is already initialized with:
 * Before executing for implementation understand for each `package.json`, `next.config.ts`, `tsconfig.json` , `postcss.config.mjs` , `tailwind.config.ts` , `eslint.config.mjs` , `global.css` installed and preconfigured so that it does not match the implementation.
 * Do not use `--force` for every new npm package or component install, must use `--legacy-peer-deps` to avoid conflicts with other packages or dependencies.
 * Do not use `npm shadcn-ui@latest {add}` for every new component, must use `npx shadcn@latest {add}` (refer to https://ui.shadcn.com/docs/installation/next).
+* Make sure for UI implementation should be `Wide` not `compact` layout.
+* Make sure for UI implementation should be `Dark` not `Light` layout.
 * shadcn/ui Components refer to https://github.com/shadcn-ui/ui/tree/main/apps/www/components.
 * Magic UI Component refer to https://github.com/magicuidesign/magicui/tree/main/components.
 
@@ -40,7 +42,7 @@ The project is already initialized with:
     * [√] Ensure Tailwind directives are in `src/styles/globals.css`.
     * [√] Configure Tailwind CSS for "Dark Mode by default".
     * [√] Initialize `shadcn/ui`: Run `npx shadcn@latest init` and configure paths.
-    * [ ] Add initial MagicUI components if identified (e.g., `npx shadcn@latest add "https://magicui.design/r/globe.json"`).
+    * [√] Add initial MagicUI components if identified (e.g., `npx shadcn@latest add "https://magicui.design/r/globe.json"`).
     * [√] If using SASS, install `sass` and configure with Next.js.
 * [√] **Global Styles & Project Structure:**
     * [√] Define base global styles in `src/styles/globals.css`.
@@ -50,7 +52,7 @@ The project is already initialized with:
     * [√] Configure ESLint with plugins for React, Next.js, TypeScript, and Tailwind CSS (`eslint-plugin-tailwindcss`).
     * [√] Set up Stylelint (if using SASS or for stricter CSS).
     * [√] Integrate Prettier for code formatting.
-    * [ ] Install `msw` (Mock Service Worker) for API mocking (optional, based on dev workflow).
+    * [√] Install `msw` (Mock Service Worker) for API mocking (optional, based on dev workflow).
     * [√] Install `react-query` (or `swr`) for client-side data fetching.
 * [√] **Version Control:**
     * [√] Initialize Git repository.

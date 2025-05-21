@@ -4,7 +4,11 @@
 
 Indonet Analytics Hub Platform is a role-based web application designed to serve as a centralized platform for presenting analytical content, system notifications, and user management dynamically and securely. The application supports the integration of external URLs and delivers information in an interactive format, manageable by internal users according to their assigned access rights.
 
-[![Indonet Analytics Hub]](https://cdn.qwenlm.ai/output/144093b4-3007-49f6-89bc-fbdcce557939/t2i/352c9f4c-d3d9-4a16-af42-874ed0b2e08e/5bc34462-1ef0-4d4d-a055-abfdc028a356.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiMTQ0MDkzYjQtMzAwNy00OWY2LTg5YmMtZmJkY2NlNTU3OTM5IiwicmVzb3VyY2VfaWQiOiI1YmMzNDQ2Mi0xZWYwLTRkNGQtYTA1NS1hYmZkYzAyOGEzNTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.nn2FbKtK4ZM68gQ44Z-hTsrJV498-05IGWEZ-wItKiA)
+<div align="center">
+
+![Indonet Analytics Hub](https://cdn.qwenlm.ai/output/144093b4-3007-49f6-89bc-fbdcce557939/t2i/352c9f4c-d3d9-4a16-af42-874ed0b2e08e/5bc34462-1ef0-4d4d-a055-abfdc028a356.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiMTQ0MDkzYjQtMzAwNy00OWY2LTg5YmMtZmJkY2NlNTU3OTM5IiwicmVzb3VyY2VfaWQiOiI1YmMzNDQ2Mi0xZWYwLTRkNGQtYTA1NS1hYmZkYzAyOGEzNTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.nn2FbKtK4ZM68gQ44Z-hTsrJV498-05IGWEZ-wItKiA)
+
+</div>
 
 <div align="center">
 
@@ -19,6 +23,56 @@ Indonet Analytics Hub Platform is a role-based web application designed to serve
 * **Terms & Conditions:** Admins can manage Terms & Conditions content, which users must accept after login.
 * **Access Control:** Granular permission and role management system controlled by administrators. Roles dictate access to menus and content.
 * **Menu Management:** Admins or privileged users can dynamically configure a multi-level navigation menu with Font Awesome icons, linking to internal or external content.
+
+## Development Tools
+
+### Mock Service Worker (MSW)
+
+This project uses Mock Service Worker to intercept and mock API requests during development. This allows frontend development to proceed without requiring the backend API to be fully implemented.
+
+#### MSW Configuration Files
+
+- `src/mocks/handlers.ts` - Define mock API request handlers
+- `src/mocks/browser.ts` - Browser-side MSW setup
+- `src/mocks/server.ts` - Node-side MSW setup for tests
+- `src/mocks/initialize.tsx` - React component to initialize MSW
+
+#### Adding a New Mock API Endpoint
+
+```typescript
+// Example in src/mocks/handlers.ts
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  // Add your mock handler
+  http.get('/api/users', () => {
+    return HttpResponse.json([
+      { id: '1', name: 'User 1' },
+      { id: '2', name: 'User 2' }
+    ]);
+  })
+];
+```
+
+### MagicUI Components
+
+This project integrates [MagicUI components](https://magicui.design/) with shadcn/ui for enhanced UI capabilities.
+
+#### Globe Component
+
+The Globe component provides an interactive 3D globe visualization:
+
+```tsx
+import { Globe } from "@/components/magicui/globe";
+
+function MyComponent() {
+  return (
+    <div className="relative aspect-square w-full max-w-[400px]">
+      <Globe />
+    </div>
+  );
+}
+```
 * **Content Management:** Create and manage various content types including HTML, text, images, embedded YouTube videos, documents (PDF, Word, Excel, PPT), and embed external URLs (secured and requiring login for access).
 * **System Notifications:** Admins or privileged users can create system-wide notifications (text, image, video, document, hyperlink) visible to all users, with read/unread status tracking.
 * **Email Template Management:** Admins can customize email templates for user invitations, password resets, and system warnings.
