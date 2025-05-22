@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -29,15 +29,13 @@ export function DigitalClock({
     };
   }, []);
 
-  const timeFormat = format24Hour ? 'HH:mm' : 'hh:mm a';
+  const timeFormat = format24Hour ? "HH:mm" : "hh:mm a";
   const fullTimeFormat = showSeconds ? `${timeFormat}:ss` : timeFormat;
-  const dateFormat = 'EEEE, MMMM d, yyyy';
+  const dateFormat = "EEEE, MMMM d, yyyy";
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
-      <div className="text-2xl font-bold">
-        {format(time, fullTimeFormat)}
-      </div>
+      <div className="text-2xl font-bold">{format(time, fullTimeFormat)}</div>
       {showDate && (
         <div className="text-sm text-muted-foreground mt-1">
           {format(time, dateFormat)}

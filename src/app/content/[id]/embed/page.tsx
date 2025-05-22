@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import ContentViewer from '@/components/content/ContentViewer';
-import { Spinner } from '@/components/ui/spinner';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ContentViewer from "@/components/content/ContentViewer";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function EmbeddedContentPage({ params }: { params: { id: string } }) {
+export default function EmbeddedContentPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,21 +20,21 @@ export default function EmbeddedContentPage({ params }: { params: { id: string }
       try {
         // Try to fetch the content to check authentication
         const response = await fetch(`/api/content/${params.id}`);
-        
+
         if (response.status === 401) {
           // User needs to be authenticated
           router.push(`/login?redirectTo=/content/${params.id}/embed`);
           return;
         }
-        
+
         if (!response.ok) {
-          throw new Error('Content not found or unavailable');
+          throw new Error("Content not found or unavailable");
         }
-        
+
         // User is authenticated and content is available
         setIsAuthenticated(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
         setLoading(false);
       }

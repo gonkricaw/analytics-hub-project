@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from './button';
-import { Input } from './input';
-import { X } from 'lucide-react';
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { Input } from "./input";
+import { X } from "lucide-react";
 
-interface FileInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
+interface FileInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type" | "value" | "onChange"
+  > {
   onChange?: (files: File[]) => void;
   value?: File[];
   multiple?: boolean;
@@ -35,17 +39,17 @@ export function FileInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
-    
+
     const selectedFiles = Array.from(e.target.files);
     setFiles(multiple ? [...files, ...selectedFiles] : selectedFiles);
-    
+
     if (onChange) {
       onChange(multiple ? [...files, ...selectedFiles] : selectedFiles);
     }
 
     // Reset input value so the same file can be selected again
     if (inputRef.current) {
-      inputRef.current.value = '';
+      inputRef.current.value = "";
     }
   };
 
@@ -53,14 +57,14 @@ export function FileInput({
     const newFiles = [...files];
     newFiles.splice(index, 1);
     setFiles(newFiles);
-    
+
     if (onChange) {
       onChange(newFiles);
     }
   };
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -68,7 +72,7 @@ export function FileInput({
           onClick={handleClick}
           className={buttonClassName}
         >
-          Choose File{multiple ? 's' : ''}
+          Choose File{multiple ? "s" : ""}
         </Button>
         <Input
           ref={inputRef}
@@ -80,11 +84,14 @@ export function FileInput({
           {...props}
         />
       </div>
-      
+
       {showSelectedFiles && files.length > 0 && (
         <div className="space-y-2">
           {files.map((file, i) => (
-            <div key={`${file.name}-${i}`} className="flex items-center gap-2 p-2 rounded-md border text-sm">
+            <div
+              key={`${file.name}-${i}`}
+              className="flex items-center gap-2 p-2 rounded-md border text-sm"
+            >
               <span className="truncate flex-1">{file.name}</span>
               <Button
                 type="button"

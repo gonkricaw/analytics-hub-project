@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import prisma from '@/lib/prisma';
-import authOptions from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/prisma";
+import authOptions from "@/lib/auth";
 
 // Helper function to check if user is admin
 async function isAdmin(request: NextRequest) {
@@ -9,9 +9,9 @@ async function isAdmin(request: NextRequest) {
   if (!session) {
     return false;
   }
-  
+
   // Check if user has admin role
-  return session.user.role === 'Admin';
+  return session.user.role === "Admin";
 }
 
 /**
@@ -20,10 +20,10 @@ async function isAdmin(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   // Check if user is admin
-  if (!await isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  if (!(await isAdmin(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
-  
+
   try {
     const roles = await prisma.idnbi_Role.findMany({
       select: {
@@ -32,13 +32,16 @@ export async function GET(request: NextRequest) {
         description: true,
       },
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     });
-    
+
     return NextResponse.json(roles);
   } catch (error) {
-    console.error('Error fetching roles:', error);
-    return NextResponse.json({ error: 'Failed to fetch roles' }, { status: 500 });
+    console.error("Error fetching roles:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch roles" },
+      { status: 500 },
+    );
   }
 }

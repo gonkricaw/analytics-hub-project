@@ -1,13 +1,13 @@
-import { prisma } from '@/lib/prisma';
-import { sendEmail } from '@/lib/email';
-import * as Sentry from '@sentry/nextjs';
+import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
+import * as Sentry from "@sentry/nextjs";
 
 export enum SystemWarningType {
-  MULTIPLE_FAILED_LOGINS = 'MULTIPLE_FAILED_LOGINS',
-  EXCESSIVE_IP_BLOCKS = 'EXCESSIVE_IP_BLOCKS',
-  SERVER_ERROR = 'SERVER_ERROR',
-  SUSPICIOUS_ACTIVITY = 'SUSPICIOUS_ACTIVITY',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE'
+  MULTIPLE_FAILED_LOGINS = "MULTIPLE_FAILED_LOGINS",
+  EXCESSIVE_IP_BLOCKS = "EXCESSIVE_IP_BLOCKS",
+  SERVER_ERROR = "SERVER_ERROR",
+  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
+  SYSTEM_MAINTENANCE = "SYSTEM_MAINTENANCE",
 }
 
 interface SystemWarningOptions {
@@ -18,98 +18,107 @@ interface SystemWarningOptions {
 
 /**
  * Send a system warning email to administrators
- * 
+ *
  * @param warningType Type of system warning
  * @param options Additional options (title, details, recipients)
  */
 export async function sendSystemWarningEmail(
   warningType: SystemWarningType,
-  options: SystemWarningOptions = {}
+  options: SystemWarningOptions = {},
 ): Promise<boolean> {
   try {
     // Get system admin emails if recipients not specified
     let recipients = options.recipients;
-    
+
     if (!recipients || recipients.length === 0) {
       // Find admin users to send the email to
       const adminUsers = await prisma.idnbi_User.findMany({
         where: {
           role: {
-            name: 'Admin'
-          }
+            name: "Admin",
+          },
         },
         select: {
-          email: true
-        }
+          email: true,
+        },
       });
-      
-      recipients = adminUsers.map(user => user.email);
+
+      recipients = adminUsers.map((user) => user.email);
     }
-    
+
     // If no recipients, log a warning and exit
     if (!recipients || recipients.length === 0) {
-      console.warn('No recipients found for system warning email');
+      console.warn("No recipients found for system warning email");
       return false;
     }
-    
+
     // Get email template from database or use default
     const emailTemplate = await prisma.idnbi_EmailTemplate.findUnique({
       where: {
-        template_type: 'system_warning'
-      }
+        template_type: "system_warning",
+      },
     });
-    
+
     // Generate default template if custom one doesn't exist
     let subject = `[SYSTEM WARNING] ${options.title || getDefaultWarningTitle(warningType)}`;
-    let bodyHtml = generateDefaultWarningEmailBody(warningType, options.details || {});
-    
+    let bodyHtml = generateDefaultWarningEmailBody(
+      warningType,
+      options.details || {},
+    );
+
     // Use custom template if available
     if (emailTemplate) {
       subject = emailTemplate.subject
-        .replace('{{warning_type}}', warningType)
-        .replace('{{title}}', options.title || getDefaultWarningTitle(warningType));
-      
+        .replace("{{warning_type}}", warningType)
+        .replace(
+          "{{title}}",
+          options.title || getDefaultWarningTitle(warningType),
+        );
+
       // Replace placeholders in custom template body
       bodyHtml = emailTemplate.body_html
-        .replace('{{warning_type}}', warningType)
-        .replace('{{title}}', options.title || getDefaultWarningTitle(warningType))
-        .replace('{{details}}', JSON.stringify(options.details || {}));
-        
+        .replace("{{warning_type}}", warningType)
+        .replace(
+          "{{title}}",
+          options.title || getDefaultWarningTitle(warningType),
+        )
+        .replace("{{details}}", JSON.stringify(options.details || {}));
+
       // Additional dynamic replacements can be added here
     }
-    
+
     // Send the email
     const sent = await sendEmail({
       to: recipients,
       subject,
-      html: bodyHtml
+      html: bodyHtml,
     });
-    
+
     // Log the warning in the audit log
     try {
       await prisma.idnbi_AuditLog.create({
         data: {
           user_id: null, // System-generated warning
-          action_type: 'SYSTEM_WARNING',
-          target_resource: 'SYSTEM',
+          action_type: "SYSTEM_WARNING",
+          target_resource: "SYSTEM",
           target_resource_id: warningType,
-          ip_address: '127.0.0.1', // System-generated
+          ip_address: "127.0.0.1", // System-generated
           details: JSON.stringify({
             warning_type: warningType,
             title: options.title || getDefaultWarningTitle(warningType),
             details: options.details || {},
-            recipients
-          })
-        }
+            recipients,
+          }),
+        },
       });
     } catch (logError) {
-      console.error('Error logging system warning:', logError);
+      console.error("Error logging system warning:", logError);
       Sentry.captureException(logError);
     }
-    
+
     return sent;
   } catch (error) {
-    console.error('Error sending system warning email:', error);
+    console.error("Error sending system warning email:", error);
     Sentry.captureException(error);
     return false;
   }
@@ -121,90 +130,93 @@ export async function sendSystemWarningEmail(
 function getDefaultWarningTitle(warningType: SystemWarningType): string {
   switch (warningType) {
     case SystemWarningType.MULTIPLE_FAILED_LOGINS:
-      return 'Multiple Failed Login Attempts Detected';
+      return "Multiple Failed Login Attempts Detected";
     case SystemWarningType.EXCESSIVE_IP_BLOCKS:
-      return 'Excessive IP Blocks Detected';
+      return "Excessive IP Blocks Detected";
     case SystemWarningType.SERVER_ERROR:
-      return 'Server Error Detected';
+      return "Server Error Detected";
     case SystemWarningType.SUSPICIOUS_ACTIVITY:
-      return 'Suspicious Activity Detected';
+      return "Suspicious Activity Detected";
     case SystemWarningType.SYSTEM_MAINTENANCE:
-      return 'System Maintenance Required';
+      return "System Maintenance Required";
     default:
-      return 'System Warning';
+      return "System Warning";
   }
 }
 
 /**
  * Generate a default HTML email body for a warning type
  */
-function generateDefaultWarningEmailBody(warningType: SystemWarningType, details: Record<string, any>): string {
-  let warningMessage = '';
-  
+function generateDefaultWarningEmailBody(
+  warningType: SystemWarningType,
+  details: Record<string, any>,
+): string {
+  let warningMessage = "";
+
   switch (warningType) {
     case SystemWarningType.MULTIPLE_FAILED_LOGINS:
       warningMessage = `
         <p>Multiple failed login attempts have been detected in the system.</p>
         <p>Details:</p>
         <ul>
-          <li>IP Address: ${details.ipAddress || 'Unknown'}</li>
-          <li>Attempts: ${details.attempts || 'Unknown'}</li>
-          <li>Timeframe: ${details.timeframe || 'Last hour'}</li>
+          <li>IP Address: ${details.ipAddress || "Unknown"}</li>
+          <li>Attempts: ${details.attempts || "Unknown"}</li>
+          <li>Timeframe: ${details.timeframe || "Last hour"}</li>
         </ul>
         <p>Please review the security logs and take appropriate action if needed.</p>
       `;
       break;
-      
+
     case SystemWarningType.EXCESSIVE_IP_BLOCKS:
       warningMessage = `
         <p>An unusually high number of IP addresses have been blocked in the system.</p>
         <p>Details:</p>
         <ul>
-          <li>Number of Blocks: ${details.blockCount || 'Unknown'}</li>
-          <li>Timeframe: ${details.timeframe || 'Last 24 hours'}</li>
+          <li>Number of Blocks: ${details.blockCount || "Unknown"}</li>
+          <li>Timeframe: ${details.timeframe || "Last 24 hours"}</li>
         </ul>
         <p>This could indicate a brute force attack attempt. Please review the security logs.</p>
       `;
       break;
-      
+
     case SystemWarningType.SERVER_ERROR:
       warningMessage = `
         <p>A serious server error has occurred that requires attention.</p>
         <p>Details:</p>
         <ul>
-          <li>Error Type: ${details.errorType || 'Unknown'}</li>
-          <li>Message: ${details.message || 'No message provided'}</li>
-          <li>Path: ${details.path || 'Unknown'}</li>
+          <li>Error Type: ${details.errorType || "Unknown"}</li>
+          <li>Message: ${details.message || "No message provided"}</li>
+          <li>Path: ${details.path || "Unknown"}</li>
         </ul>
         <p>Please check the server logs for more information.</p>
       `;
       break;
-      
+
     case SystemWarningType.SUSPICIOUS_ACTIVITY:
       warningMessage = `
         <p>Suspicious activity has been detected in the system.</p>
         <p>Details:</p>
         <ul>
-          <li>Activity Type: ${details.activityType || 'Unknown'}</li>
-          <li>User ID: ${details.userId || 'Unknown'}</li>
-          <li>IP Address: ${details.ipAddress || 'Unknown'}</li>
+          <li>Activity Type: ${details.activityType || "Unknown"}</li>
+          <li>User ID: ${details.userId || "Unknown"}</li>
+          <li>IP Address: ${details.ipAddress || "Unknown"}</li>
         </ul>
         <p>Please investigate this activity further.</p>
       `;
       break;
-      
+
     case SystemWarningType.SYSTEM_MAINTENANCE:
       warningMessage = `
         <p>The system requires maintenance attention.</p>
         <p>Details:</p>
         <ul>
-          <li>Issue: ${details.issue || 'Unknown'}</li>
-          <li>Priority: ${details.priority || 'Medium'}</li>
+          <li>Issue: ${details.issue || "Unknown"}</li>
+          <li>Priority: ${details.priority || "Medium"}</li>
         </ul>
         <p>Please schedule maintenance accordingly.</p>
       `;
       break;
-      
+
     default:
       warningMessage = `
         <p>A system warning has been triggered.</p>
@@ -213,7 +225,7 @@ function generateDefaultWarningEmailBody(warningType: SystemWarningType, details
         <p>Please investigate this warning further.</p>
       `;
   }
-  
+
   return `
     <!DOCTYPE html>
     <html>

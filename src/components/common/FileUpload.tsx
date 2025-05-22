@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { Spinner } from '@/components/ui/spinner';
-import { UploadIcon, XIcon } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { UploadIcon, XIcon } from "lucide-react";
 
 interface FileUploadProps {
   onUploadComplete: (fileUrl: string, fileName: string) => void;
@@ -15,11 +15,11 @@ interface FileUploadProps {
 export default function FileUpload({
   onUploadComplete,
   accept = "image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain",
-  maxSizeMB = 10
+  maxSizeMB = 10,
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
+  const [fileName, setFileName] = useState<string>("");
   const maxSizeBytes = maxSizeMB * 1024 * 1024; // Convert MB to bytes
 
   const handleFileChange = useCallback(
@@ -37,7 +37,7 @@ export default function FileUpload({
       setFileName(file.name);
 
       // Create preview for images
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         const fileReader = new FileReader();
         fileReader.onload = () => {
           setPreview(fileReader.result as string);
@@ -50,36 +50,36 @@ export default function FileUpload({
 
       // Create form data
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
+        const response = await fetch("/api/upload", {
+          method: "POST",
           body: formData,
         });
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          throw new Error(error.error || "Upload failed");
         }
 
         const data = await response.json();
-        toast.success('File uploaded successfully');
+        toast.success("File uploaded successfully");
         onUploadComplete(data.url, file.name);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Upload failed');
+        toast.error(err instanceof Error ? err.message : "Upload failed");
         setPreview(null);
-        setFileName('');
+        setFileName("");
       } finally {
         setIsUploading(false);
       }
     },
-    [maxSizeBytes, maxSizeMB, onUploadComplete]
+    [maxSizeBytes, maxSizeMB, onUploadComplete],
   );
 
   const clearUpload = () => {
     setPreview(null);
-    setFileName('');
+    setFileName("");
   };
 
   return (
@@ -88,7 +88,7 @@ export default function FileUpload({
         <Button
           type="button"
           variant="outline"
-          onClick={() => document.getElementById('fileInput')?.click()}
+          onClick={() => document.getElementById("fileInput")?.click()}
           disabled={isUploading}
           className="flex gap-2"
         >
@@ -97,9 +97,9 @@ export default function FileUpload({
           ) : (
             <UploadIcon className="h-4 w-4" />
           )}
-          {isUploading ? 'Uploading...' : 'Upload File'}
+          {isUploading ? "Uploading..." : "Upload File"}
         </Button>
-        
+
         <input
           id="fileInput"
           type="file"
@@ -108,7 +108,7 @@ export default function FileUpload({
           className="hidden"
           disabled={isUploading}
         />
-        
+
         {fileName && (
           <div className="flex items-center gap-2 text-sm">
             <span className="truncate max-w-[200px]">{fileName}</span>
@@ -125,7 +125,7 @@ export default function FileUpload({
           </div>
         )}
       </div>
-      
+
       {preview && (
         <div className="relative">
           <img

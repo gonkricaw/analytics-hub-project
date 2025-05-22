@@ -1,17 +1,43 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Spinner } from '@/components/ui/spinner';
-import { toast } from 'sonner';
-import { PlusIcon, PencilIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { SanitizedHTML } from '@/components/ui/sanitized-html';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import {
+  PlusIcon,
+  PencilIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
+import { SanitizedHTML } from "@/components/ui/sanitized-html";
 
 type TermsAndConditions = {
   id: string;
@@ -30,152 +56,174 @@ export default function TermsAdminPage() {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [selectedTerms, setSelectedTerms] = useState<TermsAndConditions | null>(null);
-  
+
+  const [selectedTerms, setSelectedTerms] = useState<TermsAndConditions | null>(
+    null,
+  );
+
   // Form fields for creating/editing terms
   const [termsForm, setTermsForm] = useState({
-    version: '',
-    content_html: '',
+    version: "",
+    content_html: "",
   });
-  
+
   useEffect(() => {
     fetchTerms();
   }, []);
-  
+
   const fetchTerms = async () => {
     try {
-      const response = await fetch('/api/admin/terms-and-conditions');
-      
+      const response = await fetch("/api/admin/terms-and-conditions");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch terms and conditions');
+        throw new Error("Failed to fetch terms and conditions");
       }
-      
+
       const data = await response.json();
       setTermsList(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching terms:', error);
-      toast.error('Failed to load terms and conditions.');
+      console.error("Error fetching terms:", error);
+      toast.error("Failed to load terms and conditions.");
       setIsLoading(false);
     }
   };
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setTermsForm((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleCreateTerms = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!termsForm.version || !termsForm.content_html) {
-      toast.error('All fields are required.');
+      toast.error("All fields are required.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch('/api/admin/terms-and-conditions', {
-        method: 'POST',
+      const response = await fetch("/api/admin/terms-and-conditions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(termsForm),
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create terms and conditions');
+        throw new Error(data.error || "Failed to create terms and conditions");
       }
-      
-      toast.success('Terms and conditions created successfully.');
+
+      toast.success("Terms and conditions created successfully.");
       setIsCreateDialogOpen(false);
-      
+
       // Reset the form
       setTermsForm({
-        version: '',
-        content_html: '',
+        version: "",
+        content_html: "",
       });
-      
+
       // Refresh terms list
       fetchTerms();
     } catch (error) {
-      console.error('Error creating terms:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to create terms and conditions');
+      console.error("Error creating terms:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create terms and conditions",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleEditTerms = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedTerms) return;
-    
+
     if (!termsForm.version || !termsForm.content_html) {
-      toast.error('All fields are required.');
+      toast.error("All fields are required.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch(`/api/admin/terms-and-conditions/${selectedTerms.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/admin/terms-and-conditions/${selectedTerms.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(termsForm),
         },
-        body: JSON.stringify(termsForm),
-      });
-      
+      );
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to update terms and conditions');
+        throw new Error(data.error || "Failed to update terms and conditions");
       }
-      
-      toast.success('Terms and conditions updated successfully.');
+
+      toast.success("Terms and conditions updated successfully.");
       setIsEditDialogOpen(false);
-      
+
       // Refresh terms list
       fetchTerms();
     } catch (error) {
-      console.error('Error updating terms:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update terms and conditions');
+      console.error("Error updating terms:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update terms and conditions",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handlePublishTerms = async () => {
     if (!selectedTerms) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch(`/api/admin/terms-and-conditions/${selectedTerms.id}/publish`, {
-        method: 'POST',
-      });
-      
+      const response = await fetch(
+        `/api/admin/terms-and-conditions/${selectedTerms.id}/publish`,
+        {
+          method: "POST",
+        },
+      );
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to publish terms and conditions');
+        throw new Error(data.error || "Failed to publish terms and conditions");
       }
-      
-      toast.success('Terms and conditions published successfully.');
+
+      toast.success("Terms and conditions published successfully.");
       setIsPublishDialogOpen(false);
-      
+
       // Refresh terms list
       fetchTerms();
     } catch (error) {
-      console.error('Error publishing terms:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to publish terms and conditions');
+      console.error("Error publishing terms:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to publish terms and conditions",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const openEditDialog = (terms: TermsAndConditions) => {
     setSelectedTerms(terms);
     setTermsForm({
@@ -184,22 +232,22 @@ export default function TermsAdminPage() {
     });
     setIsEditDialogOpen(true);
   };
-  
+
   const openPublishDialog = (terms: TermsAndConditions) => {
     setSelectedTerms(terms);
     setIsPublishDialogOpen(true);
   };
-  
+
   const openPreviewDialog = (terms: TermsAndConditions) => {
     setSelectedTerms(terms);
     setIsPreviewDialogOpen(true);
   };
-  
+
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not published';
+    if (!dateString) return "Not published";
     return new Date(dateString).toLocaleString();
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-200px)] items-center justify-center">
@@ -207,7 +255,7 @@ export default function TermsAdminPage() {
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -254,7 +302,11 @@ export default function TermsAdminPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
@@ -266,7 +318,7 @@ export default function TermsAdminPage() {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Manage Terms and Conditions</CardTitle>
@@ -289,12 +341,18 @@ export default function TermsAdminPage() {
               <TableBody>
                 {termsList.map((terms) => (
                   <TableRow key={terms.id}>
-                    <TableCell className="font-medium">{terms.version}</TableCell>
+                    <TableCell className="font-medium">
+                      {terms.version}
+                    </TableCell>
                     <TableCell>
                       {terms.published_at ? (
-                        <span className="text-green-500 font-medium">Published</span>
+                        <span className="text-green-500 font-medium">
+                          Published
+                        </span>
                       ) : (
-                        <span className="text-amber-500 font-medium">Draft</span>
+                        <span className="text-amber-500 font-medium">
+                          Draft
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>{formatDate(terms.created_at)}</TableCell>
@@ -342,7 +400,7 @@ export default function TermsAdminPage() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
@@ -378,7 +436,11 @@ export default function TermsAdminPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
@@ -389,18 +451,22 @@ export default function TermsAdminPage() {
           </form>
         </DialogContent>
       </Dialog>
-      
+
       {/* Publish Dialog */}
       <Dialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Publish Terms and Conditions</DialogTitle>
             <DialogDescription>
-              Are you sure you want to publish version {selectedTerms?.version}? This will make it the active terms that all users must accept.
+              Are you sure you want to publish version {selectedTerms?.version}?
+              This will make it the active terms that all users must accept.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPublishDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPublishDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -414,7 +480,7 @@ export default function TermsAdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Preview Dialog */}
       <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh]">
@@ -430,7 +496,10 @@ export default function TermsAdminPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPreviewDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

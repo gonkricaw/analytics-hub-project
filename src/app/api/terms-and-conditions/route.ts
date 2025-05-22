@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
 /**
  * GET /api/terms-and-conditions
@@ -13,23 +13,23 @@ export async function GET() {
         published_at: { not: null },
       },
       orderBy: {
-        published_at: 'desc',
+        published_at: "desc",
       },
     });
-    
+
     if (!termsAndConditions) {
       return NextResponse.json(
-        { error: 'No Terms and Conditions found' },
-        { status: 404 }
+        { error: "No Terms and Conditions found" },
+        { status: 404 },
       );
     }
-    
+
     return NextResponse.json(termsAndConditions);
   } catch (error) {
-    console.error('Error fetching Terms and Conditions:', error);
+    console.error("Error fetching Terms and Conditions:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
 }

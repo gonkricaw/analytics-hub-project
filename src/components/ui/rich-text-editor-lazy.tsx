@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, Suspense } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from './button';
-import { Spinner } from './spinner';
+import React, { useState, Suspense } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { Spinner } from "./spinner";
 import {
   Bold,
   Italic,
@@ -16,28 +16,30 @@ import {
   Undo,
   Redo,
   Code,
-} from 'lucide-react';
+} from "lucide-react";
 
 // Import types only (not the actual modules) for TypeScript
-import type { Editor } from '@tiptap/react';
+import type { Editor } from "@tiptap/react";
 
 // Lazy load the heavy editor components
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 const TiptapEditor = dynamic(
   async () => {
-    const { useEditor, EditorContent } = await import('@tiptap/react');
-    const StarterKit = (await import('@tiptap/starter-kit')).default;
-    const Link = (await import('@tiptap/extension-link')).default;
-    const CodeBlockLowlight = (await import('@tiptap/extension-code-block-lowlight')).default;
-    const { common, createLowlight } = await import('lowlight');
-    
+    const { useEditor, EditorContent } = await import("@tiptap/react");
+    const StarterKit = (await import("@tiptap/starter-kit")).default;
+    const Link = (await import("@tiptap/extension-link")).default;
+    const CodeBlockLowlight = (
+      await import("@tiptap/extension-code-block-lowlight")
+    ).default;
+    const { common, createLowlight } = await import("lowlight");
+
     // Import Prism styling for syntax highlighting
-    await import('prismjs/themes/prism-tomorrow.css'); // Dark theme
-    
+    await import("prismjs/themes/prism-tomorrow.css"); // Dark theme
+
     const lowlight = createLowlight(common);
-    
-    return ({ 
+
+    return ({
       content,
       onChange,
       editable = true,
@@ -53,7 +55,7 @@ const TiptapEditor = dynamic(
           StarterKit,
           Link.configure({
             openOnClick: false,
-            validate: href => /^(https?:\/\/|mailto:|tel:)/.test(href),
+            validate: (href) => /^(https?:\/\/|mailto:|tel:)/.test(href),
           }),
           CodeBlockLowlight.configure({
             lowlight,
@@ -65,11 +67,14 @@ const TiptapEditor = dynamic(
           onChange && onChange(editor.getHTML());
         },
       });
-      
+
       return (
-        <div className={cn('rich-text-editor', className)}>
+        <div className={cn("rich-text-editor", className)}>
           {editable && editor && <MenuBar editor={editor} />}
-          <EditorContent editor={editor} className="editor-content prose prose-invert max-w-none" />
+          <EditorContent
+            editor={editor}
+            className="editor-content prose prose-invert max-w-none"
+          />
         </div>
       );
     };
@@ -78,11 +83,13 @@ const TiptapEditor = dynamic(
     loading: () => (
       <div className="flex h-48 w-full items-center justify-center bg-background/50 rounded-md border">
         <Spinner size="large" />
-        <span className="ml-2 text-sm text-muted-foreground">Loading editor...</span>
+        <span className="ml-2 text-sm text-muted-foreground">
+          Loading editor...
+        </span>
       </div>
     ),
     ssr: false, // Disable server-side rendering for this component
-  }
+  },
 );
 
 interface RichTextEditorProps {
@@ -99,12 +106,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className,
 }) => {
   return (
-    <Suspense fallback={
-      <div className="flex h-48 w-full items-center justify-center bg-background/50 rounded-md border">
-        <Spinner size="large" />
-        <span className="ml-2 text-sm text-muted-foreground">Loading editor...</span>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex h-48 w-full items-center justify-center bg-background/50 rounded-md border">
+          <Spinner size="large" />
+          <span className="ml-2 text-sm text-muted-foreground">
+            Loading editor...
+          </span>
+        </div>
+      }
+    >
       <TiptapEditor
         content={content}
         onChange={onChange}
@@ -131,7 +142,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('bold') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("bold") && "bg-accent")}
         onClick={() => editor.chain().focus().toggleBold().run()}
         title="Bold"
         type="button"
@@ -141,7 +152,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('italic') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("italic") && "bg-accent")}
         onClick={() => editor.chain().focus().toggleItalic().run()}
         title="Italic"
         type="button"
@@ -151,7 +162,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('heading', { level: 1 }) && 'bg-accent')}
+        className={cn(
+          "size-8",
+          editor.isActive("heading", { level: 1 }) && "bg-accent",
+        )}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         title="Heading 1"
         type="button"
@@ -161,7 +175,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('heading', { level: 2 }) && 'bg-accent')}
+        className={cn(
+          "size-8",
+          editor.isActive("heading", { level: 2 }) && "bg-accent",
+        )}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         title="Heading 2"
         type="button"
@@ -171,7 +188,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('heading', { level: 3 }) && 'bg-accent')}
+        className={cn(
+          "size-8",
+          editor.isActive("heading", { level: 3 }) && "bg-accent",
+        )}
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         title="Heading 3"
         type="button"
@@ -181,7 +201,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('bulletList') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("bulletList") && "bg-accent")}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         title="Bullet List"
         type="button"
@@ -191,7 +211,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('orderedList') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("orderedList") && "bg-accent")}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         title="Ordered List"
         type="button"
@@ -201,9 +221,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('link') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("link") && "bg-accent")}
         onClick={() => {
-          const url = window.prompt('Enter URL');
+          const url = window.prompt("Enter URL");
           if (url) {
             editor.chain().focus().setLink({ href: url }).run();
           } else {
@@ -218,7 +238,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
       <Button
         variant="ghost"
         size="icon"
-        className={cn('size-8', editor.isActive('codeBlock') && 'bg-accent')}
+        className={cn("size-8", editor.isActive("codeBlock") && "bg-accent")}
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         title="Code Block"
         type="button"

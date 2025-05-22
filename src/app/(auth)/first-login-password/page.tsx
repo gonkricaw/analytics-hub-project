@@ -1,93 +1,102 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 export default function FirstLoginPasswordChangePage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Check if user requires password change
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === "authenticated") {
       if (!session?.user.requirePasswordChange) {
-        router.push('/home');
+        router.push("/home");
       }
-    } else if (status === 'unauthenticated') {
-      router.push('/login');
+    } else if (status === "unauthenticated") {
+      router.push("/login");
     }
   }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters long.');
+      toast.error("Password must be at least 8 characters long.");
       return;
     }
-    
+
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      toast.error("Passwords do not match.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch('/api/auth/first-login-password', {
-        method: 'POST',
+      const response = await fetch("/api/auth/first-login-password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          newPassword
+          newPassword,
         }),
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to update password');
+        throw new Error(data.error || "Failed to update password");
       }
-      
-      toast.success('Password updated successfully.');
-      
+
+      toast.success("Password updated successfully.");
+
       // Update the session to remove the requirePasswordChange flag
       await update({
         ...session,
         user: {
           ...session?.user,
           requirePasswordChange: false,
-        }
+        },
       });
-      
+
       // Redirect to home page
-      router.push('/home');
+      router.push("/home");
     } catch (error) {
-      console.error('Error updating password:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update password');
+      console.error("Error updating password:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update password",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  if (status === 'loading' || !session?.user.requirePasswordChange) {
+
+  if (status === "loading" || !session?.user.requirePasswordChange) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Spinner size="lg" />
       </div>
     );
   }
-  
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
       <Card className="w-full max-w-md">

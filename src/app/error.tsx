@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import * as Sentry from '@sentry/nextjs';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle } from "lucide-react";
 
 export default function Error({
   error,
@@ -16,9 +23,9 @@ export default function Error({
   useEffect(() => {
     // Log the error to Sentry
     Sentry.captureException(error);
-    
+
     // Also log to console in development
-    console.error('Application error:', error);
+    console.error("Application error:", error);
   }, [error]);
 
   return (
@@ -35,9 +42,10 @@ export default function Error({
         </CardHeader>
         <CardContent className="pt-6">
           <p className="text-muted-foreground text-sm mb-4">
-            We apologize for the inconvenience. Our team has been notified of this issue.
+            We apologize for the inconvenience. Our team has been notified of
+            this issue.
           </p>
-          
+
           {error.digest && (
             <div className="bg-muted p-2 rounded-md mt-4">
               <p className="text-xs font-mono">Error ID: {error.digest}</p>
@@ -45,17 +53,10 @@ export default function Error({
           )}
         </CardContent>
         <CardFooter className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => window.history.back()}
-          >
+          <Button variant="outline" onClick={() => window.history.back()}>
             Go Back
           </Button>
-          <Button 
-            onClick={() => reset()}
-          >
-            Try Again
-          </Button>
+          <Button onClick={() => reset()}>Try Again</Button>
         </CardFooter>
       </Card>
     </div>

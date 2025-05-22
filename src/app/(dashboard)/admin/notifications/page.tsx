@@ -1,19 +1,46 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { Spinner } from '@/components/ui/spinner';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
-import { Bell, Plus } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { Bell, Plus } from "lucide-react";
 
 type Notification = {
   id: string;
@@ -47,30 +74,32 @@ export default function AdminNotificationsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   // Form state
-  const [title, setTitle] = useState('');
-  const [contentType, setContentType] = useState('text');
-  const [contentData, setContentData] = useState('');
+  const [title, setTitle] = useState("");
+  const [contentType, setContentType] = useState("text");
+  const [contentData, setContentData] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  
+
   const fetchNotifications = async (pageNum: number) => {
     try {
       setLoading(true);
-      
-      const response = await fetch(`/api/admin/notifications?page=${pageNum}&limit=10`);
-      
+
+      const response = await fetch(
+        `/api/admin/notifications?page=${pageNum}&limit=10`,
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+        throw new Error("Failed to fetch notifications");
       }
-      
+
       const data: PaginatedResponse = await response.json();
       setNotifications(data.notifications);
       setTotalPages(data.pagination.totalPages);
       setPage(data.pagination.page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      toast.error('Failed to load notifications');
+      setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error("Failed to load notifications");
     } finally {
       setLoading(false);
     }
@@ -80,59 +109,61 @@ export default function AdminNotificationsPage() {
   useEffect(() => {
     fetchNotifications(page);
   }, []);
-  
+
   // Handle pagination
   const goToPage = (pageNum: number) => {
     fetchNotifications(pageNum);
   };
-  
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title || !contentData) {
-      toast.error('Please fill all required fields');
+      toast.error("Please fill all required fields");
       return;
     }
-    
+
     try {
       setSubmitting(true);
-      
-      const response = await fetch('/api/admin/notifications', {
-        method: 'POST',
+
+      const response = await fetch("/api/admin/notifications", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           title,
           content_type: contentType,
-          content_data: contentData
-        })
+          content_data: contentData,
+        }),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to create notification');
+        throw new Error("Failed to create notification");
       }
-      
-      toast.success('Notification created successfully');
-      
+
+      toast.success("Notification created successfully");
+
       // Reset form and close dialog
-      setTitle('');
-      setContentType('text');
-      setContentData('');
+      setTitle("");
+      setContentType("text");
+      setContentData("");
       setIsDialogOpen(false);
-      
+
       // Refresh notifications list
       fetchNotifications(1);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create notification');
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create notification",
+      );
     } finally {
       setSubmitting(false);
     }
   };
-  
+
   const truncateText = (text: string, maxLength: number = 50) => {
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return text.substring(0, maxLength) + "...";
   };
 
   return (
@@ -143,10 +174,12 @@ export default function AdminNotificationsPage() {
             <Bell className="h-5 w-5 text-primary" />
             <div>
               <CardTitle>Notification Management</CardTitle>
-              <CardDescription>Create and manage system notifications</CardDescription>
+              <CardDescription>
+                Create and manage system notifications
+              </CardDescription>
             </div>
           </div>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -161,19 +194,19 @@ export default function AdminNotificationsPage() {
                   Create a new notification to be sent to all users.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="title">Title</Label>
-                  <Input 
-                    id="title" 
+                  <Input
+                    id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Notification Title"
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="content-type">Content Type</Label>
                   <Select value={contentType} onValueChange={setContentType}>
@@ -187,17 +220,20 @@ export default function AdminNotificationsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="content-data">Content</Label>
-                  {contentType === 'html' ? (
+                  {contentType === "html" ? (
                     <div className="border rounded-md">
-                      <RichTextEditor content={contentData} onChange={setContentData} />
+                      <RichTextEditor
+                        content={contentData}
+                        onChange={setContentData}
+                      />
                     </div>
-                  ) : contentType === 'image_url' ? (
+                  ) : contentType === "image_url" ? (
                     <div>
-                      <Input 
-                        id="content-data" 
+                      <Input
+                        id="content-data"
                         value={contentData}
                         onChange={(e) => setContentData(e.target.value)}
                         placeholder="Enter image URL"
@@ -205,18 +241,20 @@ export default function AdminNotificationsPage() {
                       />
                       {contentData && (
                         <div className="mt-2">
-                          <img 
-                            src={contentData} 
-                            alt="Preview" 
-                            className="max-h-[100px] rounded-md object-contain" 
-                            onError={() => toast.error("Error loading image preview")}
+                          <img
+                            src={contentData}
+                            alt="Preview"
+                            className="max-h-[100px] rounded-md object-contain"
+                            onError={() =>
+                              toast.error("Error loading image preview")
+                            }
                           />
                         </div>
                       )}
                     </div>
                   ) : (
-                    <Textarea 
-                      id="content-data" 
+                    <Textarea
+                      id="content-data"
                       value={contentData}
                       onChange={(e) => setContentData(e.target.value)}
                       placeholder="Notification content"
@@ -225,9 +263,13 @@ export default function AdminNotificationsPage() {
                     />
                   )}
                 </div>
-                
+
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={submitting}>
@@ -239,7 +281,7 @@ export default function AdminNotificationsPage() {
             </DialogContent>
           </Dialog>
         </CardHeader>
-        
+
         <CardContent>
           {loading ? (
             <div className="flex justify-center py-12">
@@ -269,12 +311,19 @@ export default function AdminNotificationsPage() {
                 <TableBody>
                   {notifications.map((notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell className="font-medium">{notification.title}</TableCell>
+                      <TableCell className="font-medium">
+                        {notification.title}
+                      </TableCell>
                       <TableCell>{notification.content_type}</TableCell>
-                      <TableCell>{truncateText(notification.content_data)}</TableCell>
+                      <TableCell>
+                        {truncateText(notification.content_data)}
+                      </TableCell>
                       <TableCell>{notification.created_by.name}</TableCell>
                       <TableCell>
-                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        {formatDistanceToNow(
+                          new Date(notification.created_at),
+                          { addSuffix: true },
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         {notification._count.userStatuses}
@@ -283,11 +332,11 @@ export default function AdminNotificationsPage() {
                   ))}
                 </TableBody>
               </Table>
-              
+
               {totalPages > 1 && (
                 <div className="flex justify-center gap-2 mt-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => goToPage(page - 1)}
                     disabled={page === 1}
                   >
@@ -296,8 +345,8 @@ export default function AdminNotificationsPage() {
                   <span className="flex items-center px-2">
                     Page {page} of {totalPages}
                   </span>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => goToPage(page + 1)}
                     disabled={page === totalPages}
                   >

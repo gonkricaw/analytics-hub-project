@@ -1,8 +1,8 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Indonet Analytics Hub - Authentication',
-  description: 'Authentication for Indonet Analytics Hub',
+  title: "Indonet Analytics Hub - Authentication",
+  description: "Authentication for Indonet Analytics Hub",
 };
 
 export default function AuthLayout({

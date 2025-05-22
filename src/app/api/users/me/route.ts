@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import authOptions from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import authOptions from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // Extend the Session type to include userId
 interface ExtendedSession {
@@ -20,14 +20,11 @@ interface ExtendedSession {
 export async function GET() {
   try {
     // Get the current session
-    const session = await getServerSession(authOptions) as ExtendedSession;
+    const session = (await getServerSession(authOptions)) as ExtendedSession;
 
     // If there's no session or user, return 401 Unauthorized
     if (!session || !session.user || !session.user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Fetch the user from the database
@@ -48,10 +45,7 @@ export async function GET() {
 
     // If the user doesn't exist, return 404 Not Found
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Return the user data without sensitive information
@@ -66,10 +60,10 @@ export async function GET() {
       last_login_at: user.last_login_at,
     });
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error("Error fetching user profile:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
 }

@@ -1,5 +1,5 @@
-import { Redis } from '@upstash/redis';
-import * as Sentry from '@sentry/nextjs';
+import { Redis } from "@upstash/redis";
+import * as Sentry from "@sentry/nextjs";
 
 // Initialize Redis client
 let redis: Redis | null = null;
@@ -14,29 +14,29 @@ export function getRedisClient(): Redis | null {
       // Check for production and staging environments first
       let url = process.env.UPSTASH_REDIS_REST_URL;
       let token = process.env.UPSTASH_REDIS_REST_TOKEN;
-      
+
       // Fall back to development Redis config if available
       if (!url && !token) {
         url = process.env.REDIS_URL;
         token = process.env.REDIS_TOKEN;
       }
-      
+
       // Only initialize if both URL and token are provided
       if (url && token) {
         redis = new Redis({
           url,
-          token
+          token,
         });
-        console.log('Redis client initialized successfully');
+        console.log("Redis client initialized successfully");
       } else {
-        console.log('Redis configuration not found, caching will be disabled');
+        console.log("Redis configuration not found, caching will be disabled");
       }
     }
-    
+
     return redis;
   } catch (error) {
     Sentry.captureException(error);
-    console.error('Error initializing Redis client:', error);
+    console.error("Error initializing Redis client:", error);
     return null;
   }
 }
@@ -57,7 +57,7 @@ export async function getCachedValue<T>(key: string): Promise<T | null> {
   try {
     const client = getRedisClient();
     if (!client) return null;
-    
+
     const data = await client.get(key);
     return data as T;
   } catch (error) {
@@ -73,11 +73,15 @@ export async function getCachedValue<T>(key: string): Promise<T | null> {
  * @param value Value to cache
  * @param options Cache options (e.g. expiration)
  */
-export async function setCachedValue<T>(key: string, value: T, options: CacheOptions = {}): Promise<boolean> {
+export async function setCachedValue<T>(
+  key: string,
+  value: T,
+  options: CacheOptions = {},
+): Promise<boolean> {
   try {
     const client = getRedisClient();
     if (!client) return false;
-    
+
     // With expiration
     if (options.expireInSeconds) {
       await client.set(key, value, { ex: options.expireInSeconds });
@@ -85,7 +89,7 @@ export async function setCachedValue<T>(key: string, value: T, options: CacheOpt
       // No expiration
       await client.set(key, value);
     }
-    
+
     return true;
   } catch (error) {
     Sentry.captureException(error);
@@ -102,7 +106,7 @@ export async function deleteCachedValue(key: string): Promise<boolean> {
   try {
     const client = getRedisClient();
     if (!client) return false;
-    
+
     await client.del(key);
     return true;
   } catch (error) {
@@ -122,35 +126,35 @@ export async function deleteCachedValue(key: string): Promise<boolean> {
 export async function cacheableValue<T>(
   key: string,
   fn: () => Promise<T>,
-  options: CacheOptions = {}
+  options: CacheOptions = {},
 ): Promise<T> {
   try {
     const client = getRedisClient();
-    
+
     // If Redis is not available, just compute and return the value
     if (!client) {
       return await fn();
     }
-    
+
     // Try to get from cache first
     const cachedValue = await getCachedValue<T>(key);
-    
+
     // Return cached value if available
     if (cachedValue !== null) {
       return cachedValue;
     }
-    
+
     // Otherwise compute the value
     const value = await fn();
-    
+
     // Cache the computed value
     await setCachedValue<T>(key, value, options);
-    
+
     return value;
   } catch (error) {
     Sentry.captureException(error);
     console.error(`Cache operation error for key ${key}:`, error);
-    
+
     // If caching fails, just compute and return the value
     return await fn();
   }

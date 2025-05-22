@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu as MenuIcon, X, ChevronDown } from 'lucide-react';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from './navigation-menu';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Button } from './button';
-import { NotificationDropdown } from '@/components/common/NotificationDropdown';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu as MenuIcon, X, ChevronDown } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "./navigation-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Button } from "./button";
+import { NotificationDropdown } from "@/components/common/NotificationDropdown";
 
 // Types for menu items from API
 interface MenuItemModel {
@@ -17,17 +24,17 @@ interface MenuItemModel {
   parent_id: string | null;
   order: number;
   icon_class: string | null;
-  type: 'link_internal' | 'link_external' | 'dropdown';
+  type: "link_internal" | "link_external" | "dropdown";
   target_url: string | null;
   content_id: string | null;
   children?: MenuItemModel[];
 }
 
 export function DynamicNavbar({
-  title = 'Indonet Analytics Hub',
-  logoSrc = '/logo.png',
-  userImage = '',
-  userName = 'User',
+  title = "Indonet Analytics Hub",
+  logoSrc = "/logo.png",
+  userImage = "",
+  userName = "User",
 }) {
   const [menuItems, setMenuItems] = useState<MenuItemModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,44 +47,44 @@ export function DynamicNavbar({
     const fetchMenuItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/menus');
-        
+        const response = await fetch("/api/menus");
+
         if (!response.ok) {
-          throw new Error('Failed to fetch menu items');
+          throw new Error("Failed to fetch menu items");
         }
-        
+
         const data = await response.json();
         setMenuItems(data);
       } catch (err) {
-        console.error('Error fetching menu items:', err);
-        setError('Failed to load navigation menu');
+        console.error("Error fetching menu items:", err);
+        setError("Failed to load navigation menu");
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchMenuItems();
   }, []);
 
   // Function to log menu access for analytics
   const logMenuAccess = async (menuItemId: string) => {
     try {
-      await fetch('/api/menu-access-log', {
-        method: 'POST',
+      await fetch("/api/menu-access-log", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ menuItemId }),
       });
     } catch (error) {
       // Silent fail, don't block navigation
-      console.error('Failed to log menu access:', error);
+      console.error("Failed to log menu access:", error);
     }
   };
 
   // Render menu item based on its type
   const renderMenuItem = (item: MenuItemModel) => {
-    if (item.type === 'dropdown' && item.children && item.children.length > 0) {
+    if (item.type === "dropdown" && item.children && item.children.length > 0) {
       return (
         <NavigationMenuItem key={item.id}>
           <NavigationMenuTrigger className="bg-transparent hover:bg-slate-800">
@@ -87,15 +94,13 @@ export function DynamicNavbar({
           <NavigationMenuContent className="bg-slate-900 border border-slate-800">
             <ul className="grid gap-2 p-4 md:w-[400px] lg:w-[500px]">
               {item.children.map((child) => (
-                <li key={child.id}>
-                  {renderSubMenuItem(child)}
-                </li>
+                <li key={child.id}>{renderSubMenuItem(child)}</li>
               ))}
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
       );
-    } else if (item.type === 'link_internal' || item.type === 'link_external') {
+    } else if (item.type === "link_internal" || item.type === "link_external") {
       return renderLinkMenuItem(item);
     }
     return null;
@@ -103,23 +108,25 @@ export function DynamicNavbar({
 
   // Render a link menu item (internal or external)
   const renderLinkMenuItem = (item: MenuItemModel) => {
-    const isInternal = item.type === 'link_internal';
-    const url = isInternal 
-      ? (item.content_id ? `/content/${item.content_id}` : '#')
-      : (item.target_url || '#');
-    
+    const isInternal = item.type === "link_internal";
+    const url = isInternal
+      ? item.content_id
+        ? `/content/${item.content_id}`
+        : "#"
+      : item.target_url || "#";
+
     return (
       <NavigationMenuItem key={item.id}>
         {isInternal ? (
-          <Link 
+          <Link
             href={url}
             onClick={() => logMenuAccess(item.id)}
             legacyBehavior
             passHref
           >
-            <NavigationMenuLink 
+            <NavigationMenuLink
               className={`block select-none space-y-1 rounded-md p-3 hover:bg-slate-800 ${
-                pathname === url ? 'bg-slate-800' : ''
+                pathname === url ? "bg-slate-800" : ""
               }`}
             >
               {item.title}
@@ -142,13 +149,15 @@ export function DynamicNavbar({
 
   // Render a submenu item as a simple link
   const renderSubMenuItem = (item: MenuItemModel) => {
-    const isInternal = item.type === 'link_internal';
-    const url = isInternal 
-      ? (item.content_id ? `/content/${item.content_id}` : '#')
-      : (item.target_url || '#');
-    
+    const isInternal = item.type === "link_internal";
+    const url = isInternal
+      ? item.content_id
+        ? `/content/${item.content_id}`
+        : "#"
+      : item.target_url || "#";
+
     return isInternal ? (
-      <Link 
+      <Link
         href={url}
         onClick={() => logMenuAccess(item.id)}
         className="block select-none space-y-1 rounded-md p-3 hover:bg-slate-800"
@@ -182,12 +191,14 @@ export function DynamicNavbar({
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <Link href="/">              {logoSrc ? (
+            <Link href="/">
+              {" "}
+              {logoSrc ? (
                 <div className="relative h-10 w-10">
-                  <div 
-                    className="h-10 w-10 bg-contain bg-center bg-no-repeat" 
+                  <div
+                    className="h-10 w-10 bg-contain bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${logoSrc})` }}
-                    role="img" 
+                    role="img"
                     aria-label="Logo"
                   />
                 </div>
@@ -198,13 +209,16 @@ export function DynamicNavbar({
               )}
             </Link>
           </motion.div>
-          <h1 className="text-white font-bold text-xl hidden sm:block">{title}</h1>
+          <h1 className="text-white font-bold text-xl hidden sm:block">
+            {title}
+          </h1>
         </div>
-
         {/* Desktop Navigation */}
         <div className="hidden md:block">
           {loading ? (
-            <div className="h-10 flex items-center text-gray-400">Loading menu...</div>
+            <div className="h-10 flex items-center text-gray-400">
+              Loading menu...
+            </div>
           ) : error ? (
             <div className="h-10 flex items-center text-red-400">{error}</div>
           ) : (
@@ -214,7 +228,8 @@ export function DynamicNavbar({
               </NavigationMenuList>
             </NavigationMenu>
           )}
-        </div>        {/* User Section */}
+        </div>{" "}
+        {/* User Section */}
         <div className="flex items-center space-x-4">
           {/* Notification Dropdown */}
           <motion.div
@@ -245,7 +260,11 @@ export function DynamicNavbar({
               className="text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <MenuIcon className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
@@ -256,7 +275,7 @@ export function DynamicNavbar({
         {mobileMenuOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="md:hidden bg-slate-900 border-t border-slate-800 overflow-hidden"
@@ -269,18 +288,27 @@ export function DynamicNavbar({
               ) : (
                 <nav className="space-y-3">
                   {menuItems.map((item) => {
-                    if (item.type === 'dropdown' && item.children && item.children.length > 0) {
+                    if (
+                      item.type === "dropdown" &&
+                      item.children &&
+                      item.children.length > 0
+                    ) {
                       return (
                         <div key={item.id} className="space-y-2">
-                          <div className="font-medium text-white">{item.title}</div>
+                          <div className="font-medium text-white">
+                            {item.title}
+                          </div>
                           <div className="pl-4 space-y-2 border-l-2 border-slate-700">
                             {item.children.map((child) => {
-                              const url = child.type === 'link_internal' 
-                                ? (child.content_id ? `/content/${child.content_id}` : '#')
-                                : (child.target_url || '#');
-                              
-                              return child.type === 'link_internal' ? (
-                                <Link 
+                              const url =
+                                child.type === "link_internal"
+                                  ? child.content_id
+                                    ? `/content/${child.content_id}`
+                                    : "#"
+                                  : child.target_url || "#";
+
+                              return child.type === "link_internal" ? (
+                                <Link
                                   href={url}
                                   key={child.id}
                                   onClick={() => {
@@ -310,13 +338,19 @@ export function DynamicNavbar({
                           </div>
                         </div>
                       );
-                    } else if (item.type === 'link_internal' || item.type === 'link_external') {
-                      const url = item.type === 'link_internal' 
-                        ? (item.content_id ? `/content/${item.content_id}` : '#')
-                        : (item.target_url || '#');
-                      
-                      return item.type === 'link_internal' ? (
-                        <Link 
+                    } else if (
+                      item.type === "link_internal" ||
+                      item.type === "link_external"
+                    ) {
+                      const url =
+                        item.type === "link_internal"
+                          ? item.content_id
+                            ? `/content/${item.content_id}`
+                            : "#"
+                          : item.target_url || "#";
+
+                      return item.type === "link_internal" ? (
+                        <Link
                           href={url}
                           key={item.id}
                           onClick={() => {

@@ -1,21 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { toast } from 'sonner';
-import ContentForm from './ContentForm';
-import { DeleteConfirmDialog } from '../menu-management/DeleteConfirmDialog';
-import { PlusIcon, PencilIcon, TrashIcon, SearchIcon } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import ContentForm from "./ContentForm";
+import { DeleteConfirmDialog } from "../menu-management/DeleteConfirmDialog";
+import { PlusIcon, PencilIcon, TrashIcon, SearchIcon } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 type Content = {
   id: string;
   title: string;
-  type: 'html' | 'image' | 'youtube' | 'document' | 'external_link_embed';
+  type: "html" | "image" | "youtube" | "document" | "external_link_embed";
   content_data: string;
   created_at: string;
   updated_at: string;
@@ -40,48 +47,48 @@ export default function ContentManagement() {
   const [currentContent, setCurrentContent] = useState<Content | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<string | null>(null);
-  
+
   // Pagination and filtering
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 10,
     totalCount: 0,
-    totalPages: 0
+    totalPages: 0,
   });
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [contentType, setContentType] = useState('');
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [contentType, setContentType] = useState("");
 
   // Fetch content items
   const fetchContents = async () => {
     try {
       setLoading(true);
-      
+
       // Build query parameters
       const params = new URLSearchParams();
-      params.append('page', pagination.page.toString());
-      params.append('limit', pagination.limit.toString());
-      
+      params.append("page", pagination.page.toString());
+      params.append("limit", pagination.limit.toString());
+
       if (searchTerm) {
-        params.append('search', searchTerm);
+        params.append("search", searchTerm);
       }
-      
+
       if (contentType) {
-        params.append('type', contentType);
+        params.append("type", contentType);
       }
-      
+
       const response = await fetch(`/api/admin/content?${params.toString()}`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch content items');
+        throw new Error("Failed to fetch content items");
       }
-      
+
       const data = await response.json();
       setContents(data.contents);
       setPagination(data.pagination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      toast.error('Failed to fetch content items');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
+      toast.error("Failed to fetch content items");
     } finally {
       setLoading(false);
     }
@@ -93,7 +100,7 @@ export default function ContentManagement() {
 
   const handleSearch = () => {
     // Reset to page 1 when searching
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
     fetchContents();
   };
 
@@ -114,21 +121,23 @@ export default function ContentManagement() {
 
   const confirmDelete = async () => {
     if (!contentToDelete) return;
-    
+
     try {
       const response = await fetch(`/api/admin/content/${contentToDelete}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete content');
+        throw new Error(error.error || "Failed to delete content");
       }
-      
-      toast.success('Content deleted successfully');
+
+      toast.success("Content deleted successfully");
       fetchContents();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete content');
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete content",
+      );
     } finally {
       setIsDeleteDialogOpen(false);
       setContentToDelete(null);
@@ -149,12 +158,18 @@ export default function ContentManagement() {
   // Helper function to get content type display
   const getContentTypeDisplay = (type: string) => {
     switch (type) {
-      case 'html': return 'HTML Content';
-      case 'image': return 'Image';
-      case 'youtube': return 'YouTube Video';
-      case 'document': return 'Document';
-      case 'external_link_embed': return 'External Link Embed';
-      default: return type;
+      case "html":
+        return "HTML Content";
+      case "image":
+        return "Image";
+      case "youtube":
+        return "YouTube Video";
+      case "document":
+        return "Document";
+      case "external_link_embed":
+        return "External Link Embed";
+      default:
+        return type;
     }
   };
 
@@ -166,7 +181,7 @@ export default function ContentManagement() {
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= pagination.totalPages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+      setPagination((prev) => ({ ...prev, page: newPage }));
     }
   };
 
@@ -182,9 +197,9 @@ export default function ContentManagement() {
     return (
       <div className="bg-destructive/20 p-4 rounded-md">
         <p className="text-destructive">Error: {error}</p>
-        <Button 
-          onClick={() => fetchContents()} 
-          variant="outline" 
+        <Button
+          onClick={() => fetchContents()}
+          variant="outline"
           className="mt-2"
         >
           Retry
@@ -212,7 +227,7 @@ export default function ContentManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
           </div>
@@ -260,17 +275,17 @@ export default function ContentManagement() {
                   <TableCell>{formatDate(content.updated_at)}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2 justify-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEditContent(content)}
                         className="h-8 w-8 p-0"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDeleteContent(content.id)}
                         className="h-8 w-8 p-0"
                       >
@@ -290,8 +305,11 @@ export default function ContentManagement() {
         <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-muted-foreground">
             Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{" "}
-            {pagination.totalCount} entries
+            {Math.min(
+              pagination.page * pagination.limit,
+              pagination.totalCount,
+            )}{" "}
+            of {pagination.totalCount} entries
           </p>
           <div className="flex space-x-2">
             <Button
@@ -303,7 +321,7 @@ export default function ContentManagement() {
               Previous
             </Button>
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-              .filter(page => {
+              .filter((page) => {
                 // Show first, last, current, and pages close to current
                 return (
                   page === 1 ||
@@ -316,9 +334,7 @@ export default function ContentManagement() {
                 const showEllipsis = index > 0 && page - array[index - 1] > 1;
                 return (
                   <div key={page} className="flex items-center">
-                    {showEllipsis && (
-                      <span className="px-2">...</span>
-                    )}
+                    {showEllipsis && <span className="px-2">...</span>}
                     <Button
                       size="sm"
                       variant={page === pagination.page ? "default" : "outline"}

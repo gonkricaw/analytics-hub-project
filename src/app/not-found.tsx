@@ -1,7 +1,14 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileQuestion } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { FileQuestion } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -18,23 +25,16 @@ export default function NotFound() {
         </CardHeader>
         <CardContent className="pt-6">
           <p className="text-muted-foreground text-sm">
-            The page you're trying to access cannot be found. Please check the URL or navigate back to the homepage.
+            The page you're trying to access cannot be found. Please check the
+            URL or navigate back to the homepage.
           </p>
         </CardContent>
         <CardFooter className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => window.history.back()}
-          >
+          <Button variant="outline" onClick={() => window.history.back()}>
             Go Back
           </Button>
-          <Button 
-            variant="default" 
-            asChild
-          >
-            <Link href="/">
-              Home
-            </Link>
+          <Button variant="default" asChild>
+            <Link href="/">Home</Link>
           </Button>
         </CardFooter>
       </Card>

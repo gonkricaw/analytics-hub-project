@@ -1,19 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import FileUpload from '@/components/common/FileUpload';
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import FileUpload from "@/components/common/FileUpload";
 
 type Content = {
   id: string;
   title: string;
-  type: 'html' | 'image' | 'youtube' | 'document' | 'external_link_embed';
+  type: "html" | "image" | "youtube" | "document" | "external_link_embed";
   content_data: string;
   created_at?: string;
   updated_at?: string;
@@ -32,111 +37,124 @@ type ContentFormProps = {
 export default function ContentForm({
   content,
   onClose,
-  onSubmit
+  onSubmit,
 }: ContentFormProps) {
   const [formData, setFormData] = useState<{
     title: string;
-    type: 'html' | 'image' | 'youtube' | 'document' | 'external_link_embed';
+    type: "html" | "image" | "youtube" | "document" | "external_link_embed";
     content_data: string;
   }>({
-    title: '',
-    type: 'html',
-    content_data: ''
+    title: "",
+    type: "html",
+    content_data: "",
   });
-  
+
   const [loading, setLoading] = useState(false);
-  const [htmlContent, setHtmlContent] = useState('');
-  
+  const [htmlContent, setHtmlContent] = useState("");
+
   // Initialize form data if editing
   useEffect(() => {
     if (content) {
       setFormData({
         title: content.title,
         type: content.type,
-        content_data: content.content_data
+        content_data: content.content_data,
       });
-      
-      if (content.type === 'html') {
+
+      if (content.type === "html") {
         setHtmlContent(content.content_data);
       }
     }
   }, [content]);
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
-  
+
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = e.target.value as 'html' | 'image' | 'youtube' | 'document' | 'external_link_embed';
+    const newType = e.target.value as
+      | "html"
+      | "image"
+      | "youtube"
+      | "document"
+      | "external_link_embed";
     setFormData({
       ...formData,
       type: newType,
-      content_data: newType === 'html' ? htmlContent : formData.content_data
+      content_data: newType === "html" ? htmlContent : formData.content_data,
     });
   };
-  
+
   const handleHtmlChange = (html: string) => {
     setHtmlContent(html);
     setFormData({
       ...formData,
-      content_data: html
+      content_data: html,
     });
   };
   // Handle file upload completion with the file URL
   const handleFileUpload = (fileUrl: string) => {
     setFormData({
       ...formData,
-      content_data: fileUrl
+      content_data: fileUrl,
     });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
-      
-      let url = '/api/admin/content';
-      let method = 'POST';
-      
+
+      let url = "/api/admin/content";
+      let method = "POST";
+
       if (content) {
         url = `/api/admin/content/${content.id}`;
-        method = 'PUT';
+        method = "PUT";
       }
-      
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save content');
+        throw new Error(errorData.error || "Failed to save content");
       }
-      
-      toast.success(`Content ${content ? 'updated' : 'created'} successfully`);
+
+      toast.success(`Content ${content ? "updated" : "created"} successfully`);
       onSubmit();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save content');
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save content",
+      );
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{content ? 'Edit Content' : 'Add New Content'}</DialogTitle>
+          <DialogTitle>
+            {content ? "Edit Content" : "Add New Content"}
+          </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="title">Title</Label>
@@ -148,7 +166,7 @@ export default function ContentForm({
               required
             />
           </div>
-            <div>
+          <div>
             <Label htmlFor="content-type">Content Type</Label>
             <select
               id="content-type"
@@ -164,20 +182,31 @@ export default function ContentForm({
               <option value="external_link_embed">External Link Embed</option>
             </select>
           </div>
-          
-          {formData.type === 'html' ? (
+
+          {formData.type === "html" ? (
             <div>
               <Label htmlFor="html-content">HTML Content</Label>
               <div className="border rounded-md mt-1">
-                <RichTextEditor content={htmlContent} onChange={handleHtmlChange} />
+                <RichTextEditor
+                  content={htmlContent}
+                  onChange={handleHtmlChange}
+                />
               </div>
             </div>
-          ): formData.type === 'image' || formData.type === 'document' ? (
+          ) : formData.type === "image" || formData.type === "document" ? (
             <div>
-              <Label>Upload {formData.type === 'image' ? 'Image' : 'Document'}</Label>
-              <div className="mt-1">                <FileUpload 
-                  onUploadComplete={(url) => handleFileUpload(url)} 
-                  accept={formData.type === 'image' ? "image/*" : "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"}
+              <Label>
+                Upload {formData.type === "image" ? "Image" : "Document"}
+              </Label>
+              <div className="mt-1">
+                {" "}
+                <FileUpload
+                  onUploadComplete={(url) => handleFileUpload(url)}
+                  accept={
+                    formData.type === "image"
+                      ? "image/*"
+                      : "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                  }
                 />
               </div>
               <div className="mt-2">
@@ -187,15 +216,15 @@ export default function ContentForm({
                   name="content_data"
                   value={formData.content_data}
                   onChange={handleInputChange}
-                  placeholder={`Enter ${formData.type === 'image' ? 'image' : 'document'} URL`}
+                  placeholder={`Enter ${formData.type === "image" ? "image" : "document"} URL`}
                 />
               </div>
-              {formData.type === 'image' && formData.content_data && (
+              {formData.type === "image" && formData.content_data && (
                 <div className="mt-2">
-                  <img 
-                    src={formData.content_data} 
-                    alt="Preview" 
-                    className="max-h-[200px] rounded-md object-contain" 
+                  <img
+                    src={formData.content_data}
+                    alt="Preview"
+                    className="max-h-[200px] rounded-md object-contain"
                     onError={() => toast.error("Error loading image preview")}
                   />
                 </div>
@@ -204,11 +233,11 @@ export default function ContentForm({
           ) : (
             <div>
               <Label htmlFor="content_data">
-                {formData.type === 'youtube' 
-                  ? 'YouTube Video URL or Embed Code' 
-                  : formData.type === 'external_link_embed' 
-                    ? 'External URL to Embed' 
-                    : 'Content Data'}
+                {formData.type === "youtube"
+                  ? "YouTube Video URL or Embed Code"
+                  : formData.type === "external_link_embed"
+                    ? "External URL to Embed"
+                    : "Content Data"}
               </Label>
               <Textarea
                 id="content_data"
@@ -220,13 +249,18 @@ export default function ContentForm({
               />
             </div>
           )}
-          
+
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : content ? 'Update' : 'Create'}
+              {loading ? "Saving..." : content ? "Update" : "Create"}
             </Button>
           </div>
         </form>

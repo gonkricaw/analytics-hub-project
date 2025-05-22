@@ -1,20 +1,21 @@
-'use client';
+"use client";
 
-import React, { Suspense } from 'react';
-import { cn } from '@/lib/utils';
-import { Card } from './card';
-import dynamic from 'next/dynamic';
+import React, { Suspense } from "react";
+import { cn } from "@/lib/utils";
+import { Card } from "./card";
+import dynamic from "next/dynamic";
 
 // Define chart types and interfaces
-interface ApexAxisChartSeries extends Array<{
-  name?: string;
-  data: number[] | { x: any; y: any }[];
-}> {}
+interface ApexAxisChartSeries
+  extends Array<{
+    name?: string;
+    data: number[] | { x: any; y: any }[];
+  }> {}
 
 interface ApexNonAxisChartSeries extends Array<number> {}
 
 interface ChartProps {
-  type: 'line' | 'area' | 'bar' | 'pie' | 'donut' | 'radialBar' | 'radar';
+  type: "line" | "area" | "bar" | "pie" | "donut" | "radialBar" | "radar";
   series: ApexAxisChartSeries | ApexNonAxisChartSeries;
   options: ApexCharts.ApexOptions;
   height?: number | string;
@@ -41,15 +42,21 @@ const ChartPlaceholder = ({
       {(title || subtitle) && (
         <div className="p-6 pb-0">
           {title && <h3 className="text-lg font-semibold">{title}</h3>}
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
+          )}
         </div>
       )}
       <div className="p-6">
-        <div 
+        <div
           className="w-full bg-muted rounded-md animate-pulse flex items-center justify-center"
-          style={{ height: typeof height === 'number' ? `${height}px` : height }}
+          style={{
+            height: typeof height === "number" ? `${height}px` : height,
+          }}
         >
-          <div className="text-muted-foreground text-sm">Loading chart data...</div>
+          <div className="text-muted-foreground text-sm">
+            Loading chart data...
+          </div>
         </div>
       </div>
     </Card>
@@ -58,19 +65,32 @@ const ChartPlaceholder = ({
 
 // Lazy load the actual Chart component
 const ChartComponent = dynamic(
-  () => import('./chart').then((mod) => mod.Chart),
+  () => import("./chart").then((mod) => mod.Chart),
   {
     ssr: false,
     loading: ({ className, title, subtitle }) => (
-      <ChartPlaceholder className={className} title={title} subtitle={subtitle} />
-    )
-  }
+      <ChartPlaceholder
+        className={className}
+        title={title}
+        subtitle={subtitle}
+      />
+    ),
+  },
 );
 
 // LazyChart component that wraps the dynamic import
 export function LazyChart(props: ChartProps) {
   return (
-    <Suspense fallback={<ChartPlaceholder className={props.className} title={props.title} subtitle={props.subtitle} height={props.height} />}>
+    <Suspense
+      fallback={
+        <ChartPlaceholder
+          className={props.className}
+          title={props.title}
+          subtitle={props.subtitle}
+          height={props.height}
+        />
+      }
+    >
       <ChartComponent {...props} />
     </Suspense>
   );

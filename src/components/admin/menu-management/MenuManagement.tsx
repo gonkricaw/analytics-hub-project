@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Spinner } from '@/components/ui/spinner';
-import { toast } from 'sonner';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import MenuForm from './MenuForm';
-import { PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import MenuForm from "./MenuForm";
+import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react";
 
 type MenuItem = {
   id: string;
@@ -16,7 +23,7 @@ type MenuItem = {
   parent_id: string | null;
   order: number;
   icon_class: string | null;
-  type: 'link_internal' | 'link_external' | 'dropdown';
+  type: "link_internal" | "link_external" | "dropdown";
   target_url: string | null;
   content_id: string | null;
   created_at: string;
@@ -46,30 +53,30 @@ export default function MenuManagement() {
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/menus');
-      
+      const response = await fetch("/api/admin/menus");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch menu items');
+        throw new Error("Failed to fetch menu items");
       }
-      
+
       const data = await response.json();
       setMenuItems(data);
-      
+
       // Extract parent menus (top-level items and their immediate children)
       const parents: MenuItem[] = [];
       data.forEach((item: MenuItem) => {
         parents.push(item);
         if (item.children) {
-          item.children.forEach(child => {
+          item.children.forEach((child) => {
             parents.push(child);
           });
         }
       });
-      
+
       setParentMenus(parents);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      toast.error('Failed to fetch menu items');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
+      toast.error("Failed to fetch menu items");
     } finally {
       setLoading(false);
     }
@@ -78,32 +85,32 @@ export default function MenuManagement() {
   // Fetch roles
   const fetchRoles = async () => {
     try {
-      const response = await fetch('/api/admin/roles');
-      
+      const response = await fetch("/api/admin/roles");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch roles');
+        throw new Error("Failed to fetch roles");
       }
-      
+
       const data = await response.json();
       setRoles(data);
     } catch (err) {
-      toast.error('Failed to fetch roles');
+      toast.error("Failed to fetch roles");
     }
   };
 
   // Fetch content items
   const fetchContents = async () => {
     try {
-      const response = await fetch('/api/admin/content');
-      
+      const response = await fetch("/api/admin/content");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch content items');
+        throw new Error("Failed to fetch content items");
       }
-      
+
       const data = await response.json();
       setContents(data);
     } catch (err) {
-      toast.error('Failed to fetch content items');
+      toast.error("Failed to fetch content items");
     }
   };
 
@@ -130,21 +137,23 @@ export default function MenuManagement() {
 
   const confirmDelete = async () => {
     if (!menuToDelete) return;
-    
+
     try {
       const response = await fetch(`/api/admin/menus/${menuToDelete}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete menu item');
+        throw new Error(error.error || "Failed to delete menu item");
       }
-      
-      toast.success('Menu item deleted successfully');
+
+      toast.success("Menu item deleted successfully");
       fetchMenuItems();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete menu item');
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete menu item",
+      );
     } finally {
       setIsDeleteDialogOpen(false);
       setMenuToDelete(null);
@@ -164,31 +173,41 @@ export default function MenuManagement() {
 
   // Helper function to get icon rendering
   const renderIcon = (iconClass: string | null) => {
-    if (!iconClass) return 'None';
+    if (!iconClass) return "None";
     return <i className={iconClass}>{iconClass}</i>;
   };
 
   // Helper function to get parent menu name
   const getParentName = (parentId: string | null) => {
-    if (!parentId) return 'None';
-    const parent = parentMenus.find(item => item.id === parentId);
-    return parent ? parent.title : 'Unknown';
+    if (!parentId) return "None";
+    const parent = parentMenus.find((item) => item.id === parentId);
+    return parent ? parent.title : "Unknown";
   };
 
   // Helper function to get type display
   const getTypeDisplay = (type: string) => {
     switch (type) {
-      case 'link_internal': return 'Internal Link';
-      case 'link_external': return 'External Link';
-      case 'dropdown': return 'Dropdown';
-      default: return type;
+      case "link_internal":
+        return "Internal Link";
+      case "link_external":
+        return "External Link";
+      case "dropdown":
+        return "Dropdown";
+      default:
+        return type;
     }
   };
 
   // Helper function for nested menu items display
   const renderMenuItems = (items: MenuItem[]) => {
     if (!items || items.length === 0) {
-      return <TableRow><TableCell colSpan={6} className="text-center">No menu items found</TableCell></TableRow>;
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="text-center">
+            No menu items found
+          </TableCell>
+        </TableRow>
+      );
     }
 
     return items.map((item) => (
@@ -200,17 +219,17 @@ export default function MenuManagement() {
         <TableCell>{getTypeDisplay(item.type)}</TableCell>
         <TableCell>
           <div className="flex space-x-2 justify-end">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => handleEditMenu(item)}
               className="h-8 w-8 p-0"
             >
               <PencilIcon className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="destructive" 
-              size="sm" 
+            <Button
+              variant="destructive"
+              size="sm"
               onClick={() => handleDeleteMenu(item.id)}
               className="h-8 w-8 p-0"
             >
@@ -260,9 +279,7 @@ export default function MenuManagement() {
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {renderMenuItems(menuItems)}
-          </TableBody>
+          <TableBody>{renderMenuItems(menuItems)}</TableBody>
         </Table>
       </div>
 

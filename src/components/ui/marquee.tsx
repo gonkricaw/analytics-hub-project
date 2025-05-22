@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -35,7 +35,7 @@ export function Marquee({
 
   // Distance to travel is the content width
   const distance = width;
-  
+
   // Calculate duration based on speed and distance
   // The formula is: duration (in seconds) = distance (in pixels) / speed (pixels per second)
   const duration = distance / speed;

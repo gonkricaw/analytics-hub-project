@@ -1,13 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import prisma from '@/lib/prisma';
-import authOptions from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/prisma";
+import authOptions from "@/lib/auth";
 
 // Default email templates
-const defaultTemplates: Record<string, { subject: string; body_html: string }> = {
-  'user_invitation': {
-    subject: 'Invitation to Indonet Analytics Hub',
-    body_html: `
+const defaultTemplates: Record<string, { subject: string; body_html: string }> =
+  {
+    user_invitation: {
+      subject: "Invitation to Indonet Analytics Hub",
+      body_html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Welcome to Indonet Analytics Hub</h2>
         <p>Hello {{name}},</p>
@@ -19,11 +20,11 @@ const defaultTemplates: Record<string, { subject: string; body_html: string }> =
         <p>If you have any questions, please contact our support team.</p>
         <p>Regards,<br>Indonet Analytics Hub Team</p>
       </div>
-    `
-  },
-  'password_reset': {
-    subject: 'Password Reset Request',
-    body_html: `
+    `,
+    },
+    password_reset: {
+      subject: "Password Reset Request",
+      body_html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Password Reset</h2>
         <p>Hello {{name}},</p>
@@ -32,11 +33,11 @@ const defaultTemplates: Record<string, { subject: string; body_html: string }> =
         <p>This link is valid for 1 hour. If you did not request a password reset, please ignore this email.</p>
         <p>Regards,<br>Indonet Analytics Hub Team</p>
       </div>
-    `
-  },
-  'system_warning': {
-    subject: 'Security Alert: Unusual Activity Detected',
-    body_html: `
+    `,
+    },
+    system_warning: {
+      subject: "Security Alert: Unusual Activity Detected",
+      body_html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #e11d48;">Security Alert</h2>
         <p>Hello {{name}},</p>
@@ -45,9 +46,9 @@ const defaultTemplates: Record<string, { subject: string; body_html: string }> =
         <p>If you did not perform these actions, please change your password immediately and contact our support team.</p>
         <p>Regards,<br>Indonet Analytics Hub Security Team</p>
       </div>
-    `
-  }
-};
+    `,
+    },
+  };
 
 // Helper function to check if user is admin
 async function isAdmin(request: NextRequest) {
@@ -55,9 +56,9 @@ async function isAdmin(request: NextRequest) {
   if (!session) {
     return false;
   }
-  
+
   // Check if user has admin role
-  return session.user.role === 'Admin';
+  return session.user.role === "Admin";
 }
 
 /**
@@ -66,35 +67,38 @@ async function isAdmin(request: NextRequest) {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   // Check if user is admin
-  if (!await isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  if (!(await isAdmin(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
-  
+
   const { id } = params;
-  
+
   try {
     // Check if the template exists
     const existingTemplate = await prisma.idnbi_EmailTemplate.findUnique({
       where: { id },
     });
-    
+
     if (!existingTemplate) {
-      return NextResponse.json({ error: 'Email template not found' }, { status: 404 });
-    }
-    
-    // Get default template content
-    const defaultTemplate = defaultTemplates[existingTemplate.template_type];
-    
-    if (!defaultTemplate) {
       return NextResponse.json(
-        { error: 'No default template available for this type' },
-        { status: 400 }
+        { error: "Email template not found" },
+        { status: 404 },
       );
     }
-    
+
+    // Get default template content
+    const defaultTemplate = defaultTemplates[existingTemplate.template_type];
+
+    if (!defaultTemplate) {
+      return NextResponse.json(
+        { error: "No default template available for this type" },
+        { status: 400 },
+      );
+    }
+
     // Reset the template to default
     const resetTemplate = await prisma.idnbi_EmailTemplate.update({
       where: { id },
@@ -104,26 +108,29 @@ export async function POST(
         is_custom: false, // Mark as default
       },
     });
-    
+
     // Create audit log
     const session = await getServerSession(authOptions);
     await prisma.idnbi_AuditLog.create({
       data: {
         user_id: session?.user.id,
-        action_type: 'RESET_EMAIL_TEMPLATE',
-        target_resource: 'EMAIL_TEMPLATE',
+        action_type: "RESET_EMAIL_TEMPLATE",
+        target_resource: "EMAIL_TEMPLATE",
         target_resource_id: id,
-        ip_address: request.headers.get('x-forwarded-for') || '127.0.0.1',
+        ip_address: request.headers.get("x-forwarded-for") || "127.0.0.1",
         details: `Reset email template to default: ${existingTemplate.template_type}`,
       },
     });
-    
+
     return NextResponse.json({
-      message: 'Email template reset successfully',
+      message: "Email template reset successfully",
       template: resetTemplate,
     });
   } catch (error) {
-    console.error('Error resetting email template:', error);
-    return NextResponse.json({ error: 'Failed to reset email template' }, { status: 500 });
+    console.error("Error resetting email template:", error);
+    return NextResponse.json(
+      { error: "Failed to reset email template" },
+      { status: 500 },
+    );
   }
 }

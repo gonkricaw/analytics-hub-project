@@ -1,18 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Spinner } from '@/components/ui/spinner';
-import { toast } from 'sonner';
-import { PencilIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { SanitizedHTML } from '@/components/ui/sanitized-html';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import { PencilIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { SanitizedHTML } from "@/components/ui/sanitized-html";
 
 type EmailTemplate = {
   id: string;
@@ -25,9 +46,9 @@ type EmailTemplate = {
 };
 
 const templateTypeNames: Record<string, string> = {
-  'user_invitation': 'User Invitation',
-  'password_reset': 'Password Reset',
-  'system_warning': 'System Warning',
+  user_invitation: "User Invitation",
+  password_reset: "Password Reset",
+  system_warning: "System Warning",
 };
 
 export default function EmailTemplatesAdminPage() {
@@ -36,103 +57,120 @@ export default function EmailTemplatesAdminPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
-  
-  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
-  
+  const [activeTab, setActiveTab] = useState("all");
+
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplate | null>(null);
+
   // Form fields for editing templates
   const [templateForm, setTemplateForm] = useState({
-    subject: '',
-    body_html: '',
+    subject: "",
+    body_html: "",
   });
-  
+
   useEffect(() => {
     fetchTemplates();
   }, []);
-  
+
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/api/admin/email-templates');
-      
+      const response = await fetch("/api/admin/email-templates");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch email templates');
+        throw new Error("Failed to fetch email templates");
       }
-      
+
       const data = await response.json();
       setTemplates(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching templates:', error);
-      toast.error('Failed to load email templates.');
+      console.error("Error fetching templates:", error);
+      toast.error("Failed to load email templates.");
       setIsLoading(false);
     }
   };
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setTemplateForm((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleEditTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedTemplate) return;
-    
+
     if (!templateForm.subject || !templateForm.body_html) {
-      toast.error('All fields are required.');
+      toast.error("All fields are required.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch(`/api/admin/email-templates/${selectedTemplate.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/admin/email-templates/${selectedTemplate.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(templateForm),
         },
-        body: JSON.stringify(templateForm),
-      });
-      
+      );
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to update email template');
+        throw new Error(data.error || "Failed to update email template");
       }
-      
-      toast.success('Email template updated successfully.');
+
+      toast.success("Email template updated successfully.");
       setIsEditDialogOpen(false);
-      
+
       // Refresh templates list
       fetchTemplates();
     } catch (error) {
-      console.error('Error updating template:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update email template');
+      console.error("Error updating template:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update email template",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleResetTemplate = async (templateId: string) => {
     try {
-      const response = await fetch(`/api/admin/email-templates/${templateId}/reset`, {
-        method: 'POST',
-      });
-      
+      const response = await fetch(
+        `/api/admin/email-templates/${templateId}/reset`,
+        {
+          method: "POST",
+        },
+      );
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to reset email template');
+        throw new Error(data.error || "Failed to reset email template");
       }
-      
-      toast.success('Email template reset successfully.');
-      
+
+      toast.success("Email template reset successfully.");
+
       // Refresh templates list
       fetchTemplates();
     } catch (error) {
-      console.error('Error resetting template:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to reset email template');
+      console.error("Error resetting template:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to reset email template",
+      );
     }
   };
-  
+
   const openEditDialog = (template: EmailTemplate) => {
     setSelectedTemplate(template);
     setTemplateForm({
@@ -141,26 +179,27 @@ export default function EmailTemplatesAdminPage() {
     });
     setIsEditDialogOpen(true);
   };
-  
+
   const openPreviewDialog = (template: EmailTemplate) => {
     setSelectedTemplate(template);
     setIsPreviewDialogOpen(true);
   };
-  
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
-  
+
   const getTemplateTypeName = (type: string) => {
     return templateTypeNames[type] || type;
   };
-  
-  const filteredTemplates = activeTab === 'all' 
-    ? templates 
-    : activeTab === 'custom' 
-      ? templates.filter(t => t.is_custom) 
-      : templates.filter(t => !t.is_custom);
-  
+
+  const filteredTemplates =
+    activeTab === "all"
+      ? templates
+      : activeTab === "custom"
+        ? templates.filter((t) => t.is_custom)
+        : templates.filter((t) => !t.is_custom);
+
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-200px)] items-center justify-center">
@@ -168,21 +207,25 @@ export default function EmailTemplatesAdminPage() {
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Email Templates</h2>
       </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
+
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full mb-6"
+      >
         <TabsList>
           <TabsTrigger value="all">All Templates</TabsTrigger>
           <TabsTrigger value="custom">Custom</TabsTrigger>
           <TabsTrigger value="default">Default</TabsTrigger>
         </TabsList>
       </Tabs>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Manage Email Templates</CardTitle>
@@ -205,13 +248,19 @@ export default function EmailTemplatesAdminPage() {
               <TableBody>
                 {filteredTemplates.map((template) => (
                   <TableRow key={template.id}>
-                    <TableCell className="font-medium">{getTemplateTypeName(template.template_type)}</TableCell>
+                    <TableCell className="font-medium">
+                      {getTemplateTypeName(template.template_type)}
+                    </TableCell>
                     <TableCell>{template.subject}</TableCell>
                     <TableCell>
                       {template.is_custom ? (
-                        <span className="text-amber-500 font-medium">Custom</span>
+                        <span className="text-amber-500 font-medium">
+                          Custom
+                        </span>
                       ) : (
-                        <span className="text-blue-500 font-medium">Default</span>
+                        <span className="text-blue-500 font-medium">
+                          Default
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>{formatDate(template.updated_at)}</TableCell>
@@ -256,14 +305,17 @@ export default function EmailTemplatesAdminPage() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Email Template</DialogTitle>
             <DialogDescription>
-              Customize the {selectedTemplate && getTemplateTypeName(selectedTemplate.template_type)} template.
+              Customize the{" "}
+              {selectedTemplate &&
+                getTemplateTypeName(selectedTemplate.template_type)}{" "}
+              template.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditTemplate}>
@@ -291,17 +343,32 @@ export default function EmailTemplatesAdminPage() {
                 />
               </div>
               <div className="bg-slate-800 border rounded p-4">
-                <h3 className="text-sm font-medium mb-2">Available Variables:</h3>
+                <h3 className="text-sm font-medium mb-2">
+                  Available Variables:
+                </h3>
                 <ul className="text-sm space-y-1 text-slate-300">
-                  <li><code>{{name}}</code> - Recipient's name</li>
-                  <li><code>{{email}}</code> - Recipient's email</li>
-                  <li><code>{{link}}</code> - Action link (reset password, etc.)</li>
-                  <li><code>{{temp_password}}</code> - Temporary password (for invitations)</li>
+                  <li>
+                    <code>{{ name }}</code> - Recipient's name
+                  </li>
+                  <li>
+                    <code>{{ email }}</code> - Recipient's email
+                  </li>
+                  <li>
+                    <code>{{ link }}</code> - Action link (reset password, etc.)
+                  </li>
+                  <li>
+                    <code>{{ temp_password }}</code> - Temporary password (for
+                    invitations)
+                  </li>
                 </ul>
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
@@ -312,14 +379,15 @@ export default function EmailTemplatesAdminPage() {
           </form>
         </DialogContent>
       </Dialog>
-      
+
       {/* Preview Dialog */}
       <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Preview Email Template</DialogTitle>
             <DialogDescription>
-              {selectedTemplate && getTemplateTypeName(selectedTemplate.template_type)}
+              {selectedTemplate &&
+                getTemplateTypeName(selectedTemplate.template_type)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -337,7 +405,10 @@ export default function EmailTemplatesAdminPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsPreviewDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

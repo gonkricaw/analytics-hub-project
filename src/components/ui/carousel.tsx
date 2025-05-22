@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect, useState } from 'react';
-import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation, Autoplay } from 'swiper/modules';
-import { motion } from 'framer-motion';
+import { ReactNode, useEffect, useState } from "react";
+import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
+import { Pagination, Navigation, Autoplay } from "swiper/modules";
+import { motion } from "framer-motion";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 interface CarouselProps {
   items: ReactNode[];
@@ -17,7 +17,7 @@ interface CarouselProps {
   showNavigation?: boolean;
   showPagination?: boolean;
   spaceBetween?: number;
-  slidesPerView?: number | 'auto';
+  slidesPerView?: number | "auto";
   loop?: boolean;
   className?: string;
 }
@@ -31,7 +31,7 @@ export const Carousel = ({
   spaceBetween = 30,
   slidesPerView = 1,
   loop = true,
-  className = '',
+  className = "",
 }: CarouselProps) => {
   const [mounted, setMounted] = useState(false);
 
@@ -45,7 +45,7 @@ export const Carousel = ({
   }
 
   return (
-    <motion.div 
+    <motion.div
       className={`relative w-full ${className}`}
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.3 }}
@@ -56,7 +56,11 @@ export const Carousel = ({
         loop={loop}
         pagination={showPagination ? { clickable: true } : false}
         navigation={showNavigation}
-        autoplay={autoplay ? { delay: autoplayDelay, disableOnInteraction: false } : false}
+        autoplay={
+          autoplay
+            ? { delay: autoplayDelay, disableOnInteraction: false }
+            : false
+        }
         modules={[Pagination, Navigation, Autoplay]}
         className="w-full rounded-xl overflow-hidden"
       >

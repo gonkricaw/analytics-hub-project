@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
-import { SanitizedHTML } from '@/components/ui/sanitized-html';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { SanitizedHTML } from "@/components/ui/sanitized-html";
+import { toast } from "sonner";
 
 type Content = {
   id: string;
   title: string;
-  type: 'html' | 'image' | 'youtube' | 'document' | 'external_link_embed';
+  type: "html" | "image" | "youtube" | "document" | "external_link_embed";
   content_data: string;
   created_at: string;
   updated_at: string;
@@ -27,28 +27,28 @@ export default function ContentViewer({ id }: { id: string }) {
       try {
         setLoading(true);
         const response = await fetch(`/api/content/${id}`);
-        
+
         if (response.status === 401) {
           // Handle authentication required (redirect to login)
           const data = await response.json();
           if (data.redirectToLogin) {
             // Store the original URL to redirect back after login
             const currentPath = window.location.pathname;
-            sessionStorage.setItem('redirectAfterLogin', currentPath);
-            router.push('/login');
+            sessionStorage.setItem("redirectAfterLogin", currentPath);
+            router.push("/login");
             return;
           }
         }
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch content');
+          throw new Error("Failed to fetch content");
         }
-        
+
         const data = await response.json();
         setContent(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        toast.error('Failed to load content');
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        toast.error("Failed to load content");
       } finally {
         setLoading(false);
       }
@@ -70,9 +70,7 @@ export default function ContentViewer({ id }: { id: string }) {
   if (error || !content) {
     return (
       <div className="bg-destructive/20 p-4 rounded-md">
-        <p className="text-destructive">
-          {error || 'Content not found'}
-        </p>
+        <p className="text-destructive">{error || "Content not found"}</p>
       </div>
     );
   }
@@ -80,31 +78,31 @@ export default function ContentViewer({ id }: { id: string }) {
   // Render content based on type
   const renderContent = () => {
     switch (content.type) {
-      case 'html':
+      case "html":
         return (
           <div className="prose prose-invert max-w-none">
             <SanitizedHTML html={content.content_data} />
           </div>
         );
-      
-      case 'image':
+
+      case "image":
         return (
           <div className="flex justify-center">
-            <img 
-              src={content.content_data} 
+            <img
+              src={content.content_data}
               alt={content.title}
               className="max-w-full h-auto rounded-md"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.onerror = null;
-                target.src = '/placeholder-image.png';
+                target.src = "/placeholder-image.png";
               }}
             />
           </div>
         );
-        
-      case 'youtube':
-        const videoId = content.content_data.replace(/.*v=/, '').split('&')[0];
+
+      case "youtube":
+        const videoId = content.content_data.replace(/.*v=/, "").split("&")[0];
         return (
           <div className="aspect-video w-full">
             <iframe
@@ -119,8 +117,8 @@ export default function ContentViewer({ id }: { id: string }) {
             ></iframe>
           </div>
         );
-          
-      case 'document':
+
+      case "document":
         return (
           <div className="aspect-[4/3] w-full">
             <iframe
@@ -132,8 +130,8 @@ export default function ContentViewer({ id }: { id: string }) {
             ></iframe>
           </div>
         );
-          
-      case 'external_link_embed':
+
+      case "external_link_embed":
         return (
           <div className="aspect-video w-full">
             <iframe
@@ -146,7 +144,7 @@ export default function ContentViewer({ id }: { id: string }) {
             ></iframe>
           </div>
         );
-          
+
       default:
         return (
           <div className="p-4 bg-muted rounded-md">
@@ -160,9 +158,7 @@ export default function ContentViewer({ id }: { id: string }) {
     <Card className="overflow-hidden">
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">{content.title}</h1>
-        <div className="mt-4">
-          {renderContent()}
-        </div>
+        <div className="mt-4">{renderContent()}</div>
       </div>
     </Card>
   );
