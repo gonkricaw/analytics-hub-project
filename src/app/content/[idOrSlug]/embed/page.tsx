@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 export default function EmbeddedContentPage({
   params,
 }: {
-  params: { id: string };
+  params: { idOrSlug: string };
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -19,11 +19,11 @@ export default function EmbeddedContentPage({
     const checkAuthentication = async () => {
       try {
         // Try to fetch the content to check authentication
-        const response = await fetch(`/api/content/${params.id}`);
+        const response = await fetch(`/api/content/${params.idOrSlug}`);
 
         if (response.status === 401) {
           // User needs to be authenticated
-          router.push(`/login?redirectTo=/content/${params.id}/embed`);
+          router.push(`/login?redirectTo=/content/${params.idOrSlug}/embed`);
           return;
         }
 
@@ -41,7 +41,7 @@ export default function EmbeddedContentPage({
     };
 
     checkAuthentication();
-  }, [params.id, router]);
+  }, [params.idOrSlug, router]);
 
   if (loading) {
     return (
@@ -63,7 +63,7 @@ export default function EmbeddedContentPage({
 
   return (
     <div className="p-4 min-h-screen bg-slate-950">
-      {isAuthenticated && <ContentViewer id={params.id} />}
+      {isAuthenticated && <ContentViewer id={params.idOrSlug} />}
     </div>
   );
 }

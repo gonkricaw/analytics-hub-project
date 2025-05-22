@@ -1,5 +1,5 @@
 // This file is used to instantiate the Prisma client
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma";
 
 // Add prisma to the global type
 declare global {

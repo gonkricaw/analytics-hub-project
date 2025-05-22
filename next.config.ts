@@ -12,7 +12,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   
   // Add security headers
   headers: async () => [
@@ -31,28 +30,34 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
+  // Enable Turbopack
+  turbo: {
+    // Example: adding an alias and custom file extension
+    resolveAlias: {
+      underscore: 'lodash',
+    },
+    resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
+  },
 };
+
+
 
 // Apply bundle analyzer
 const configWithBundleAnalyzer = bundleAnalyzer(nextConfig);
 
-// Configure Sentry
-export default withSentryConfig(configWithBundleAnalyzer, {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-  org: process.env.SENTRY_ORG || '',
-  project: process.env.SENTRY_PROJECT || '',
-  
-  // Auth tokens can be obtained from sentry.io/settings/account/api/auth-tokens/
-  // and need `project:releases` and `org:read` scopes
-  authToken: process.env.SENTRY_AUTH_TOKEN || '',
-  
-  silent: true, // Suppresses all logs
-  
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-  
-  // Upload source maps in production
-  disableServerWebpackPlugin: process.env.NODE_ENV !== 'production',
-  disableClientWebpackPlugin: process.env.NODE_ENV !== 'production',
-});
+// Configure Sentry with updated options
+export default withSentryConfig(
+  configWithBundleAnalyzer,
+  {
+    // Only enable in production
+    silent: process.env.NODE_ENV !== 'production'
+  },
+  {
+    // For all available options, see:
+    // https://github.com/getsentry/sentry-webpack-plugin#options
+    org: process.env.SENTRY_ORG || '',
+    project: process.env.SENTRY_PROJECT || '',
+    authToken: process.env.SENTRY_AUTH_TOKEN || '',
+  }
+);

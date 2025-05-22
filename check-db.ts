@@ -1,0 +1,1 @@
+"import { PrismaClient } from './src/generated/prisma';\nconst prisma = new PrismaClient();\nasync function main() {\n  const userCount = await prisma.idnbi_User.count();\n  console.log(`Database contains ${userCount} users`);\n}\nmain().finally(() => prisma.$disconnect());"  
