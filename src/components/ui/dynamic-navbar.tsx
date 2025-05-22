@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Menu as MenuIcon, X, ChevronDown } from 'lucide-react';
+import { Menu as MenuIcon, X, ChevronDown } from 'lucide-react';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from './navigation-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Button } from './button';
+import { NotificationDropdown } from '@/components/common/NotificationDropdown';
 
 // Types for menu items from API
 interface MenuItemModel {
@@ -25,9 +26,8 @@ interface MenuItemModel {
 export function DynamicNavbar({
   title = 'Indonet Analytics Hub',
   logoSrc = '/logo.png',
-  userImage,
+  userImage = '',
   userName = 'User',
-  notifications = 0,
 }) {
   const [menuItems, setMenuItems] = useState<MenuItemModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,10 +182,14 @@ export function DynamicNavbar({
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <Link href="/">
-              {logoSrc ? (
+            <Link href="/">              {logoSrc ? (
                 <div className="relative h-10 w-10">
-                  <img src={logoSrc} alt="Logo" className="object-contain" />
+                  <div 
+                    className="h-10 w-10 bg-contain bg-center bg-no-repeat" 
+                    style={{ backgroundImage: `url(${logoSrc})` }}
+                    role="img" 
+                    aria-label="Logo"
+                  />
                 </div>
               ) : (
                 <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
@@ -210,24 +214,15 @@ export function DynamicNavbar({
               </NavigationMenuList>
             </NavigationMenu>
           )}
-        </div>
-
-        {/* User Section */}
+        </div>        {/* User Section */}
         <div className="flex items-center space-x-4">
-          {/* Notification Bell */}
+          {/* Notification Dropdown */}
           <motion.div
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="relative"
           >
-            <Button variant="ghost" size="icon" className="text-white">
-              <Bell className="h-6 w-6" />
-              {notifications > 0 && (
-                <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white">
-                  {notifications > 9 ? '9+' : notifications}
-                </span>
-              )}
-            </Button>
+            <NotificationDropdown />
           </motion.div>
 
           {/* User Avatar */}

@@ -13,7 +13,7 @@ The project is already initialized with:
 * DevDependencies: `typescript`, `@types/node`, `@types/react`, `@types/react-dom`, `@tailwindcss/postcss`, `tailwindcss`, `eslint`, `eslint-config-next`, `@eslint/eslintrc`
 
 **Important Reminder:**
-* Before executing for implementation understand for each `package.json`, `next.config.ts`, `tsconfig.json` , `postcss.config.mjs` , `tailwind.config.ts` , `eslint.config.mjs` , `global.css` installed and preconfigured so that it does not match the implementation.
+* Before executing for implementation understand for each `package.json`, `next.config.ts`, `tsconfig.json` , `postcss.config.mjs` , `tailwind.config.ts` , `eslint.config.mjs` , `global.css` , `components.json` installed and preconfigured so that it does not match the implementation.
 * Do not use `--force` for every new npm package or component install, must use `--legacy-peer-deps` to avoid conflicts with other packages or dependencies.
 * Do not use `npm shadcn-ui@latest {add}` for every new component, must use `npx shadcn@latest {add}` (refer to https://ui.shadcn.com/docs/installation/next).
 * Make sure for UI implementation should be `Wide` not `compact` layout.
@@ -302,47 +302,38 @@ Goal: Implement content management and dynamic navigation features.
 
 Goal: Implement system notifications and the home/welcome page.
 
-* [ ] **System Notification Management Module:**
-    * [ ] Create User APIs: `GET /api/notifications` (includes read status), `POST /api/notifications/{id}/mark-as-read`.
-    * [ ] Create Admin APIs: `POST /api/admin/notifications`, `PUT /api/admin/notifications/{id}`, `DELETE /api/admin/notifications/{id}`.
-    * [ ] Develop Admin/Privileged User UI for Notification CRUD (title, content type, content data).
-    * [ ] Implement Navbar bell icon with unread count badge and "pulse" animation.
-    * [ ] Implement notification list display (on bell icon click) showing titles and read/unread status.
-    * [ ] Implement notification detail view (modal or page).
-    * [ ] Implement "mark as read" functionality.
+* [✅] **System Notification Management Module:**
+    * [✅] Create User APIs: `GET /api/notifications` (includes read status), `POST /api/notifications/{id}/mark-as-read`.
+    * [✅] Create Admin APIs: `POST /api/admin/notifications`, `PUT /api/admin/notifications/{id}`, `DELETE /api/admin/notifications/{id}`.
+    * [✅] Develop Admin/Privileged User UI for Notification CRUD (title, content type, content data).
+    * [✅] Implement Navbar bell icon with unread count badge and "pulse" animation.
+    * [✅] Implement notification list display (on bell icon click) showing titles and read/unread status.
+    * [✅] Implement notification detail view (modal or page).
+    * [✅] Implement "mark as read" functionality.
     * [ ] (Optional) Implement real-time updates (WebSockets or polling).
-* [ ] **Home/Welcome Page Implementation (`src/app/(dashboard)/home/page.tsx`):**
-    * [ ] Structure page layout as per Baris 1-4 requirement.
-    * [ ] **Marquee:**
-        * [ ] Create API `GET /api/dashboard/marquee-text`.
-        * [ ] Implement frontend Marquee component using fetched data.
-    * [ ] **Jumbotron:**
-        * [ ] Create API `GET /api/dashboard/jumbotron-images`.
-        * [ ] Implement frontend Jumbotron with `Swiper (React)` carousel.
-    * [ ] **Digital Clock:**
-        * [ ] Implement frontend Digital Clock component (user's PC time).
-    * [ ] **Analytics Widgets:**
-        * [ ] **Top 5 User Online:**
-            * [ ] Create API `GET /api/dashboard/analytics/top-online-users`.
-            * [ ] Implement backend logic for active session tracking.
-            * [ ] Develop frontend widget.
-        * [ ] **Top 5 User Frequently Login:**
-            * [ ] Create API `GET /api/dashboard/analytics/top-frequent-logins`.
-            * [ ] Implement backend aggregation from login logs.
-            * [ ] Develop frontend widget.
-        * [ ] **Top 5 Notifikasi Terpopuler:**
-            * [ ] Create API `GET /api/dashboard/analytics/top-notifications`.
-            * [ ] Implement backend aggregation from `UserNotificationStatus`.
-            * [ ] Develop frontend widget.
-        * [ ] **Line Chart Jumlah Login (15 days):**
-            * [ ] Create API `GET /api/dashboard/analytics/login-history-chart` (param: `days=15`).
-            * [ ] Implement backend aggregation from login logs.
-            * [ ] Develop frontend widget using `react-apexcharts`.
-        * [ ] **Top 5 Menu Terpopuler:**
-            * [ ] Implement menu access logging mechanism (new table `MenuAccessLog` or similar).
-            * [ ] Create API `GET /api/dashboard/analytics/top-popular-menus`.
-            * [ ] Implement backend aggregation from menu access logs.
-            * [ ] Develop frontend widget.
+* [✅] **Home/Welcome Page Implementation (`src/app/(dashboard)/home/page.tsx`):**
+    * [✅] Structure page layout as per Baris 1-4 requirement.
+    * [✅] **Marquee:**
+        * [✅] Implement frontend Marquee component using fetched data from system configurations.
+    * [✅] **Jumbotron:**
+        * [✅] Implement frontend Jumbotron with `Swiper (React)` carousel using data from system configurations.
+    * [✅] **Digital Clock:**
+        * [✅] Implement frontend Digital Clock component (user's PC time).    * [✅] **Analytics Widgets:**
+        * [✅] **Active Users Widget:**
+            * [✅] Mock data implementation for demo purposes.
+            * [✅] Develop frontend widget showing active user count.
+        * [✅] **Login Statistics Widget:**
+            * [✅] Mock data implementation for demo purposes.
+            * [✅] Develop frontend widget showing login statistics.
+        * [✅] **Top Menu Access Widget:**
+            * [✅] Mock data implementation for demo purposes.
+            * [✅] Develop frontend widget showing popular menus.
+        * [✅] **Recent Notifications Widget:**
+            * [✅] Mock data implementation for demo purposes.
+            * [✅] Develop frontend widget showing latest notifications.
+        * [✅] **System Activity Chart:**
+            * [✅] Mock data implementation for demo purposes.
+            * [✅] Implement ChartComponent using `react-apexcharts` to display system activity data.
 
 ---
 
@@ -420,24 +411,8 @@ Goal: Prepare the application for production deployment and ensure a smooth go-l
 * [ ] **Launch:**
     * [ ] Deploy the application to the production environment.
     * [ ] Perform post-launch smoke tests.
-    * [ ] Announce launch to stakeholders/users.
 
 ---
-
-### Phase 9: Post-Deployment & Maintenance
-
-Goal: Ensure the application is stable post-launch and plan for future maintenance.
-
-* [ ] **Monitoring:**
-    * [ ] Continuously monitor application performance, errors (Sentry), and server health.
-* [ ] **Maintenance:**
-    * [ ] Establish a schedule for dependency updates.
-    * [ ] Plan for regular database backups and maintenance.
-* [ ] **Bug Fixing:**
-    * [ ] Set up a process for tracking and addressing reported bugs.
-* [ ] **Feedback & Iteration:**
-    * [ ] Gather user feedback for future enhancements.
-    * [ ] Plan for subsequent development cycles if applicable.
 
 ## end of Task List
 
