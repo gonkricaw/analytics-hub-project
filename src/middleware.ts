@@ -9,6 +9,9 @@ export async function middleware(request: NextRequest) {
   // Define public paths that don't require authentication
   const isPublicPath = path === '/login' || path === '/forgot-password' || path === '/reset-password';
   
+  // Check if the path is for embedded content
+  const isEmbedContentPath = path.startsWith('/content/') && path.includes('/embed/');
+  
   // Define auth paths that should be accessible even with requirePasswordChange flag
   const isAuthPath = isPublicPath || path === '/first-login-password';
   
@@ -23,11 +26,17 @@ export async function middleware(request: NextRequest) {
   if (token && isPublicPath) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
-
-  // If the user is not authenticated and trying to access a protected path, 
+  // If the user is not authenticated and trying to access a protected path or embed content, 
   // redirect them to the login page
-  if (!token && !isPublicPath) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (!token && (!isPublicPath || isEmbedContentPath)) {
+    const loginUrl = new URL('/login', request.url);
+    
+    // For embedded content, add a redirect parameter to return to embed after login
+    if (isEmbedContentPath) {
+      loginUrl.searchParams.set('redirectTo', path);
+    }
+    
+    return NextResponse.redirect(loginUrl);
   }
   
   // If user needs to change password, redirect to first-login-password page
