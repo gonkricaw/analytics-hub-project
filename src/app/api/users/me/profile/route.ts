@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import authOptions from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { withCsrfProtection } from '@/lib/csrf';
+import { AuditActionType, createAuditLog } from '@/lib/auditLog';
+import * as Sentry from '@sentry/nextjs';
 
 // Interface for the extended session
 interface ExtendedSession {
@@ -17,7 +21,7 @@ interface ExtendedSession {
  * PUT /api/users/me/profile
  * Update the current user's profile information
  */
-export async function PUT(request: Request) {
+const handler = async (request: NextRequest) => {
   try {
     // Get the current session
     const session = await getServerSession(authOptions) as ExtendedSession;
@@ -75,29 +79,30 @@ export async function PUT(request: Request) {
     await prisma.idnbi_User.update({
       where: { id: userId },
       data: updateData
-    });
-
-    // Record the action in the audit log
-    await prisma.idnbi_AuditLog.create({
-      data: {
-        user_id: userId,
-        action_type: 'PROFILE_UPDATE',
-        target_resource: 'USER',
-        target_resource_id: userId,
-        ip_address: request.headers.get('x-forwarded-for') || '127.0.0.1',
-        details: 'User updated their profile'
+    });    // Record the action in the audit log
+    await createAuditLog({
+      actionType: AuditActionType.USER_UPDATE, 
+      targetResource: 'USER',
+      targetResourceId: userId,
+      ipAddress: request.headers.get('x-forwarded-for') || '127.0.0.1',
+      details: {
+        action: 'User updated their profile',
+        changedFields: Object.keys(updateData)
       }
     });
 
     // Revalidate the profile path
     revalidatePath('/profile');
 
-    return NextResponse.json({ message: 'Profile updated successfully' });
-  } catch (error) {
+    return NextResponse.json({ message: 'Profile updated successfully' });  } catch (error) {
     console.error('Error updating profile:', error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
 }
+
+// Apply CSRF protection to the handler
+export const PUT = withCsrfProtection(handler);

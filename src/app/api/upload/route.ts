@@ -1,11 +1,13 @@
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { mkdir } from 'fs/promises';
+import { withCsrfProtection } from '@/lib/csrf';
+import * as Sentry from '@sentry/nextjs';
 
 // Allowed file types
 const allowedFileTypes: Record<string, string> = {
@@ -21,7 +23,8 @@ const allowedFileTypes: Record<string, string> = {
   'text/plain': 'txt',
 };
 
-export async function POST(request: Request) {
+// Define the handler function separately to apply CSRF protection
+async function handlePost(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -119,3 +122,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// Apply CSRF protection and export the POST handler
+export const POST = withCsrfProtection(handlePost);

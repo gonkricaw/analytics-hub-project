@@ -3,6 +3,12 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import prisma from './prisma';
+import * as Sentry from '@sentry/nextjs';
+import { sendSystemWarningEmail } from './email';
+import { getRateLimiter } from './rate-limit';
+
+// Rate limiter for login attempts - 5 attempts per minute
+const loginRateLimiter = getRateLimiter('auth:login', 5, 60);
 
 /**
  * Record a failed login attempt, update user's failed login attempts count,

@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 import authOptions from '@/lib/auth';
+import { withCsrfProtection } from '@/lib/csrf';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * POST /api/users/me/terms-acceptance
  * Accept terms and conditions
  */
-export async function POST(request: NextRequest) {
+const handler = async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -64,7 +66,10 @@ export async function POST(request: NextRequest) {
       message: 'Terms and conditions accepted successfully',
     });
   } catch (error) {
-    console.error('Error accepting terms:', error);
+    console.error('Error accepting terms:', error);    Sentry.captureException(error);
     return NextResponse.json({ error: 'Failed to accept terms' }, { status: 500 });
   }
 }
+
+// Apply CSRF protection to the handler
+export const POST = withCsrfProtection(handler);

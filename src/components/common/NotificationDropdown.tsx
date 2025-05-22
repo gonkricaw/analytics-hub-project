@@ -8,6 +8,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as Sentry from '@sentry/nextjs';
 
 type Notification = {
   notification_id: string;

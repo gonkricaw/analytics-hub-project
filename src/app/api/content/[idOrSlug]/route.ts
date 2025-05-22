@@ -1,25 +1,32 @@
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
+import { cacheableValue } from '@/lib/cache';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { idOrSlug: string } }
-) {
-  try {
+) {  try {
     const { idOrSlug } = params;
     
-    // Get the content
-    const content = await prisma.idnbi_Content.findFirst({
-      where: {
-        OR: [
-          { id: idOrSlug },
-          // If you implement slug functionality later
-          // { slug: idOrSlug }
-        ]
-      }
-    });
+    // Get the content with caching
+    const content = await cacheableValue(
+      `content:${idOrSlug}`,
+      async () => {
+        return prisma.idnbi_Content.findFirst({
+          where: {
+            OR: [
+              { id: idOrSlug },
+              // If you implement slug functionality later
+              // { slug: idOrSlug }
+            ]
+          }
+        });
+      },
+      { expireInSeconds: 3600 } // Cache for 1 hour
+    );
 
     if (!content) {
       return NextResponse.json(
@@ -48,9 +55,9 @@ export async function GET(
     // Log access if applicable
     // This could be enhanced to track and analyze popular content
 
-    return NextResponse.json(content, { status: 200 });
-  } catch (error) {
+    return NextResponse.json(content, { status: 200 });  } catch (error) {
     console.error('Error retrieving content:', error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: 'Failed to retrieve content' },
       { status: 500 }

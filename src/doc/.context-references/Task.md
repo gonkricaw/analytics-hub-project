@@ -390,6 +390,9 @@ Goal: Ensure the application is thoroughly tested and meets quality standards be
 * [ ] **Security Testing:**
     * [ ] Perform basic security checks/scans.
     * [ ] Review against OWASP Top 10.
+* [ ] **Testing from local environments:**
+    * [ ] Ensure all tests pass in local development setups.
+    * [ ] Validate environment-specific configurations (e.g., API URLs, feature flags).
 
 ---
 
@@ -405,7 +408,7 @@ Goal: Prepare the application for production deployment and ensure a smooth go-l
 * [ ] **Build Optimization:**
     * [ ] Run `next build` and ensure it's optimized for production.
 * [ ] **Deployment Platform:**
-    * [ ] Choose and configure deployment platform (Vercel, AWS, Netlify, Docker).
+    * [ ] Choose and configure deployment platform (Elastic Compute Service from Byteplus Cloud, using Ubuntu 22.* LTS).
 * [ ] **Database Migration:**
     * [ ] Run Prisma migrations in the production database (`prisma migrate deploy`).
 * [ ] **Launch:**
