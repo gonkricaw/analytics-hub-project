@@ -1,7 +1,6 @@
-## Indonet Analytics Hub: Implementation Task List
-
-## Project Status: Phase 1 Complete ✅
-
+## Indonet Analytics Hub: Implementation Task List  
+  
+## Project Status: Phase 3 Complete ✅
 **Reminder: Next.js Project Setup**
 The project is already initialized with:
 * TypeScript: Yes
@@ -160,118 +159,117 @@ Goal: Develop a set of reusable UI components using `shadcn/ui` and custom compo
 
 ---
 
-### Phase 2: Backend Foundation & Authentication
+### Phase 2: Backend Foundation & Authentication ✅
 
 Goal: Establish the backend foundation with Prisma ORM, NextAuth for authentication, and initial API routes.
 
-* [ ] **Database Schema & Prisma Setup:**
-    * [ ] Define `schema.prisma` with all models:
-        * [ ] `User` model.
-        * [ ] `Role` model.
-        * [ ] `Permission` model.
-        * [ ] `RolePermission` (join table).
-        * [ ] `TermsAndConditions` model.
-        * [ ] `MenuItem` model.
-        * [ ] `Content` model.
-        * [ ] `Notification` model.
-        * [ ] `UserNotificationStatus` model.
-        * [ ] `EmailTemplate` model.
-        * [ ] `SystemConfiguration` model.
-        * [ ] `AuditLog` model.
-        * [ ] `PasswordResetToken` model (or similar name).
-        * [ ] `FailedLoginAttemptLog` / `IPBlocklist` models (or integrate fields into `User`).
-    * [ ] Run `npx prisma migrate dev --name init` to create and apply initial migration.
-    * [ ] Run `npx prisma generate` to generate Prisma Client.
-    * [ ] Create Prisma Client instance in `src/lib/prisma.ts`.
-* [ ] **`next-auth` Implementation:**
-    * [ ] Configure `next-auth` options in `src/app/api/auth/[...nextauth]/route.ts` (or `src/lib/authOptions.ts`).
-    * [ ] Implement `CredentialsProvider` for email/password login.
-    * [ ] Integrate `bcryptjs` for password comparison in `CredentialsProvider`.
-    * [ ] Configure JWT session strategy.
-    * [ ] Implement `jwt` and `session` callbacks to include user role and ID in the session.
-* [ ] **Initial API Routes for Authentication:**
-    * [ ] Verify `POST /api/auth/login` (handled by `next-auth`).
-    * [ ] Verify `POST /api/auth/logout` (client-side `signOut()` triggers `next-auth` endpoint).
-    * [ ] Create `GET /api/users/me` to fetch current user profile data from session.
-* [ ] **Middleware for Authentication & Authorization:**
-    * [ ] Create `middleware.ts` in the `src` directory.
-    * [ ] Implement logic to protect routes based on authentication status.
-    * [ ] Implement basic role checking for route groups (e.g., `/admin/*`).
+* [✅] **Database Schema & Prisma Setup:**
+    * [✅] Define `schema.prisma` with all models:
+        * [✅] `User` model.
+        * [✅] `Role` model.
+        * [✅] `Permission` model.
+        * [✅] `RolePermission` (join table).
+        * [✅] `TermsAndConditions` model.
+        * [✅] `MenuItem` model.
+        * [✅] `Content` model.
+        * [✅] `Notification` model.
+        * [✅] `UserNotificationStatus` model.
+        * [✅] `EmailTemplate` model.
+        * [✅] `SystemConfiguration` model.
+        * [✅] `AuditLog` model.
+        * [✅] `PasswordResetToken` model (or similar name).
+        * [✅] `FailedLoginAttemptLog` / `IPBlocklist` models (or integrate fields into `User`).    * [✅] Run `npx prisma migrate dev --name init` to create and apply initial migration.
+    * [✅] Run `npx prisma generate` to generate Prisma Client.
+    * [✅] Create Prisma Client instance in `src/lib/prisma.ts`.
+* [✅] **`next-auth` Implementation:**
+    * [✅] Configure `next-auth` options in `src/app/api/auth/[...nextauth]/route.ts` (or `src/lib/authOptions.ts`).
+    * [✅] Implement `CredentialsProvider` for email/password login.
+    * [✅] Integrate `bcryptjs` for password comparison in `CredentialsProvider`.
+    * [✅] Configure JWT session strategy.
+    * [✅] Implement `jwt` and `session` callbacks to include user role and ID in the session.
+* [✅] **Initial API Routes for Authentication:**
+    * [✅] Verify `POST /api/auth/login` (handled by `next-auth`).
+    * [✅] Verify `POST /api/auth/logout` (client-side `signOut()` triggers `next-auth` endpoint).
+    * [✅] Create `GET /api/users/me` to fetch current user profile data from session.
+* [✅] **Middleware for Authentication & Authorization:**
+    * [✅] Create `middleware.ts` in the `src` directory.
+    * [✅] Implement logic to protect routes based on authentication status.
+    * [✅] Implement basic role checking for route groups (e.g., `/admin/*`).
 
 ---
 
-### Phase 3: Feature Implementation - User Management & Core Admin Functions
+### Phase 3: Feature Implementation - User Management & Core Admin Functions ✅
 
 Goal: Implement core user management features, including user roles, permissions, and system configurations.
 
-* [ ] **User Management Module:**
-    * [ ] **Login Page & Flow (`src/app/(auth)/login/page.tsx`):**
-        * [ ] Build UI using components from Phase 1.
-        * [ ] Integrate with `next-auth signIn`.
-        * [ ] Implement error display for failed login (Toast notification).
-        * [ ] Implement "Forgot Password?" link.
-    * [ ] **User Invitation (Admin):**
-        * [ ] Create API `POST /api/users/invite`.
-        * [ ] Develop Admin UI page/modal for inviting users (email, role selection).
-        * [ ] Implement logic for temporary password generation and storage.
-        * [ ] Integrate email sending for invitations (uses Email Template module later).
-    * [ ] **First Login Password Change:**
-        * [ ] Implement logic to detect first login (e.g., `temp_password_flag`).
-        * [ ] Create "Change Password" page/modal.
-        * [ ] Implement form with current (temporary) and new password fields (with validation).
-        * [ ] Create API endpoint to handle this password change.
-    * [ ] **Terms & Conditions Acceptance:**
-        * [ ] Create API `POST /api/users/me/accept-terms`.
-        * [ ] Implement Modal component display after login (if T&C not accepted/updated).
-        * [ ] Implement logic to store `terms_accepted_at` on user.
-        * [ ] Implement auto-logout if user declines T&C.
-    * [ ] **Profile Management (User):**
-        * [ ] Create API `PUT /api/users/me/profile` (for password & photo update).
-        * [ ] Develop User Profile page (view name/email, update password, update photo).
-        * [ ] Implement file upload logic for profile photo.
-    * [ ] **Forgot Password:**
-        * [ ] Create API `POST /api/auth/forgot-password`.
-        * [ ] Create API `POST /api/auth/reset-password`.
-        * [ ] Develop UI forms for requesting reset link and setting new password.
-        * [ ] Implement token generation, storage, and email sending logic.
-    * [ ] **Admin User Management (CRUD):**
-        * [ ] Create Admin page to list users (use Table component).
-        * [ ] Create API `GET /api/users`.
-        * [ ] Implement "Invite User" button linking to invite UI.
-        * [ ] Create API `DELETE /api/users/{id}` and UI for user deletion.
-        * [ ] Create API `PUT /api/users/{id}/role` and UI for changing user roles.
-    * [ ] **IP Blocking:**
-        * [ ] Implement logic to track `failed_login_attempts` (per IP and/or user).
-        * [ ] Implement IP blocking after 15 failed attempts.
-        * [ ] Create API `POST /api/users/unblock-ip` (Admin).
-        * [ ] Develop Admin UI to view and unblock IPs.
-    * [ ] **Auto Logout:**
-        * [ ] Implement client-side idle timer (15 mins) to call `signOut()`.
-        * [ ] Configure server-side session expiry in `next-auth`.
-* [ ] **Terms & Conditions Management (Admin):**
-    * [ ] Create API `GET /api/terms-and-conditions` (public/user).
-    * [ ] Create API `PUT /api/admin/terms-and-conditions`.
-    * [ ] Develop Admin page with Rich Text Editor for S&K content.
-    * [ ] Implement versioning logic for S&K (if decided).
-* [ ] **Access Control (Permissions & Roles - Admin):**
-    * [ ] Seed `Permission` table with defined granular permissions.
-    * [ ] Create API `GET /api/admin/permissions` (to list permissions for assignment).
-    * [ ] **Roles CRUD (Admin):**
-        * [ ] Create APIs: `GET /api/admin/roles`, `POST /api/admin/roles`, `PUT /api/admin/roles/{id}`, `DELETE /api/admin/roles/{id}`.
-        * [ ] Develop Admin UI for Role CRUD.
-    * [ ] **Assign Permissions to Roles (Admin):**
-        * [ ] Create APIs: `GET /api/admin/roles/{id}/permissions`, `PUT /api/admin/roles/{id}/permissions`.
-        * [ ] Develop Admin UI to assign/revoke permissions for roles (e.g., using checkboxes).
-* [ ] **Email Template Management (Admin):**
-    * [ ] Create APIs: `GET /api/admin/email-templates`, `GET /api/admin/email-templates/{type}`, `PUT /api/admin/email-templates/{type}`.
-    * [ ] Develop Admin UI to list and edit HTML email templates (User Invitation, Password Reset, System Warning).
-    * [ ] Implement logic for default templates if custom ones are not present.
-    * [ ] Integrate with chosen email service (Nodemailer/SDKs).
-* [ ] **System Configuration Management (Admin):**
-    * [ ] Create API `GET /api/system-configurations` (for frontend).
-    * [ ] Create API `PUT /api/admin/system-configurations` (Admin).
-    * [ ] Develop Admin page with forms to update: Jumbotron, marquee, logo, login background, app name, footer, default profile photo.
-    * [ ] Implement client-side fetching of these configurations.
+* [✅] **User Management Module:**
+    * [✅] **Login Page & Flow (`src/app/(auth)/login/page.tsx`):**
+        * [✅] Build UI using components from Phase 1.
+        * [✅] Integrate with `next-auth signIn`.
+        * [✅] Implement error display for failed login (Toast notification).
+        * [✅] Implement "Forgot Password?" link.
+    * [✅] **User Invitation (Admin):**
+        * [✅] Create API `POST /api/users/invite`.
+        * [✅] Develop Admin UI page/modal for inviting users (email, role selection).
+        * [✅] Implement logic for temporary password generation and storage.
+        * [✅] Integrate email sending for invitations (uses Email Template module later).
+    * [✅] **First Login Password Change:**
+        * [✅] Implement logic to detect first login (e.g., `temp_password_flag`).
+        * [✅] Create "Change Password" page/modal.
+        * [✅] Implement form with current (temporary) and new password fields (with validation).
+        * [✅] Create API endpoint to handle this password change.
+    * [✅] **Terms & Conditions Acceptance:**
+        * [✅] Create API `POST /api/users/me/accept-terms`.
+        * [✅] Implement Modal component display after login (if T&C not accepted/updated).
+        * [✅] Implement logic to store `terms_accepted_at` on user.
+        * [✅] Implement auto-logout if user declines T&C.
+    * [✅] **Profile Management (User):**
+        * [✅] Create API `PUT /api/users/me/profile` (for password & photo update).
+        * [✅] Develop User Profile page (view name/email, update password, update photo).
+        * [✅] Implement file upload logic for profile photo.
+    * [✅] **Forgot Password:**
+        * [✅] Create API `POST /api/auth/forgot-password`.
+        * [✅] Create API `POST /api/auth/reset-password`.
+        * [✅] Develop UI forms for requesting reset link and setting new password.
+        * [✅] Implement token generation, storage, and email sending logic.
+    * [✅] **Admin User Management (CRUD):**
+        * [✅] Create Admin page to list users (use Table component).
+        * [✅] Create API `GET /api/users`.
+        * [✅] Implement "Invite User" button linking to invite UI.
+        * [✅] Create API `DELETE /api/users/{id}` and UI for user deletion.
+        * [✅] Create API `PUT /api/users/{id}/role` and UI for changing user roles.
+    * [✅] **IP Blocking:**
+        * [✅] Implement logic to track `failed_login_attempts` (per IP and/or user).
+        * [✅] Implement IP blocking after 15 failed attempts.
+        * [✅] Create API `POST /api/users/unblock-ip` (Admin).
+        * [✅] Develop Admin UI to view and unblock IPs.
+    * [✅] **Auto Logout:**
+        * [✅] Implement client-side idle timer (15 mins) to call `signOut()`.
+        * [✅] Configure server-side session expiry in `next-auth`.
+* [✅] **Terms & Conditions Management (Admin):**
+    * [✅] Create API `GET /api/terms-and-conditions` (public/user).
+    * [✅] Create API `PUT /api/admin/terms-and-conditions`.
+    * [✅] Develop Admin page with Rich Text Editor for S&K content.
+    * [✅] Implement versioning logic for S&K (if decided).
+* [✅] **Access Control (Permissions & Roles - Admin):**
+    * [✅] Seed `Permission` table with defined granular permissions.
+    * [✅] Create API `GET /api/admin/permissions` (to list permissions for assignment).
+    * [✅] **Roles CRUD (Admin):**
+        * [✅] Create APIs: `GET /api/admin/roles`, `POST /api/admin/roles`, `PUT /api/admin/roles/{id}`, `DELETE /api/admin/roles/{id}`.
+        * [✅] Develop Admin UI for Role CRUD.
+    * [✅] **Assign Permissions to Roles (Admin):**
+        * [✅] Create APIs: `GET /api/admin/roles/{id}/permissions`, `PUT /api/admin/roles/{id}/permissions`.
+        * [✅] Develop Admin UI to assign/revoke permissions for roles (e.g., using checkboxes).
+* [✅] **Email Template Management (Admin):**
+    * [✅] Create APIs: `GET /api/admin/email-templates`, `GET /api/admin/email-templates/{type}`, `PUT /api/admin/email-templates/{type}`.
+    * [✅] Develop Admin UI to list and edit HTML email templates (User Invitation, Password Reset, System Warning).
+    * [✅] Implement logic for default templates if custom ones are not present.
+    * [✅] Integrate with chosen email service (Nodemailer/SDKs).
+* [✅] **System Configuration Management (Admin):**
+    * [✅] Create API `GET /api/system-configurations` (for frontend).
+    * [✅] Create API `PUT /api/admin/system-configurations` (Admin).
+    * [✅] Develop Admin page with forms to update: Jumbotron, marquee, logo, login background, app name, footer, default profile photo.
+    * [✅] Implement client-side fetching of these configurations.
 
 ---
 
