@@ -160,7 +160,7 @@ Goal: Develop a set of reusable UI components using `shadcn/ui` and custom compo
 
 ---
 
-### Phase 2: Backend Foundation & Authentication 🔄 (In Progress)
+### Phase 2: Backend Foundation & Authentication
 
 Goal: Establish the backend foundation with Prisma ORM, NextAuth for authentication, and initial API routes.
 
