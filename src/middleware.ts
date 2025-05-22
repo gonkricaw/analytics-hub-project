@@ -9,6 +9,9 @@ export async function middleware(request: NextRequest) {
   // Define public paths that don't require authentication
   const isPublicPath = path === '/login' || path === '/forgot-password' || path === '/reset-password';
   
+  // Define auth paths that should be accessible even with requirePasswordChange flag
+  const isAuthPath = isPublicPath || path === '/first-login-password';
+  
   // Get the token from the session
   const token = await getToken({
     req: request,
@@ -25,6 +28,11 @@ export async function middleware(request: NextRequest) {
   // redirect them to the login page
   if (!token && !isPublicPath) {
     return NextResponse.redirect(new URL('/login', request.url));
+  }
+  
+  // If user needs to change password, redirect to first-login-password page
+  if (token?.requirePasswordChange === true && !isAuthPath && path !== '/api') {
+    return NextResponse.redirect(new URL('/first-login-password', request.url));
   }
 
   // Check if the user is trying to access an admin route but doesn't have admin role

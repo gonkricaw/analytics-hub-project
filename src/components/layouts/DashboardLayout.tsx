@@ -2,6 +2,8 @@
 
 import { Navbar } from '@/components/ui/navbar';
 import { Footer } from '@/components/ui/footer';
+import TermsAndConditionsModal from '@/components/common/TermsAndConditionsModal';
+import AutoLogoutWarning from '@/components/common/AutoLogoutWarning';
 
 export default function DashboardLayout({
   children,
@@ -33,13 +35,12 @@ export default function DashboardLayout({
           description: 'Detailed reports and data analysis',
         },
       ],
-    },
-    {
+    },    {
       title: 'Settings',
       children: [
         {
           title: 'Profile',
-          href: '/settings/profile',
+          href: '/profile',
           description: 'Manage your account settings and preferences',
         },
         {
@@ -48,6 +49,11 @@ export default function DashboardLayout({
           description: 'Configure your notification preferences',
         },
       ],
+    },
+    {
+      title: 'Administration',
+      href: '/admin',
+      description: 'Manage users and system configurations',
     },
   ];
   
@@ -64,9 +70,13 @@ export default function DashboardLayout({
       <main className="flex-grow">
         {children}
       </main>
-      
-      {/* Footer */}
+        {/* Footer */}
       <Footer />
+        {/* Terms and Conditions Modal */}
+      <TermsAndConditionsModal />
+      
+      {/* Auto Logout Warning */}
+      <AutoLogoutWarning />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MSWInitializer } from "@/mocks/initialize";
+import { Toaster } from '@/components/ui/sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
         {/* Initialize MSW in development environment */}
         {process.env.NODE_ENV === 'development' && <MSWInitializer />}
         {children}
+        <Toaster position="top-right" />
       </body>
     </html>
   );
