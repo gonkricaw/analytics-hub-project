@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Schema for menu access log
 const menuAccessLogSchema = z.object({
@@ -39,11 +40,19 @@ export async function POST(request: Request) {
         );
       }
 
-      // Log the menu access
-      await prisma.idnbi_MenuAccessLog.create({
+      // Log the menu access using AuditLog
+      await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
-          menu_item_id: validatedData.menuItemId,
+          id: randomUUID(),
+          userId: session.user.id,
+          action: "ACCESS",
+          resource: "MENU_ITEM",
+          resourceId: validatedData.menuItemId,
+          details: JSON.stringify({
+            menuItemTitle: menuItem.title,
+            menuItemType: menuItem.type,
+            accessTime: new Date().toISOString(),
+          }),
         },
       });
 

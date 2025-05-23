@@ -1,13 +1,14 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 const notificationSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
-  content_type: z.string().min(1, { message: "Content type is required" }),
-  content_data: z.string().min(1, { message: "Content data is required" }),
+  message: z.string().min(1, { message: "Message is required" }),
+  type: z.string().min(1, { message: "Type is required" }),
   user_ids: z.array(z.string()).optional(),
 });
 
@@ -47,14 +48,8 @@ export async function GET(request: Request) {
       skip,
       take: limit,
       include: {
-        created_by: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         _count: {
-          select: { userStatuses: true },
+          select: { idnbi_UserNotificationStatus: true },
         },
       },
     });
@@ -106,10 +101,11 @@ export async function POST(request: Request) {
       // Create the notification
       const notification = await prisma.idnbi_Notification.create({
         data: {
+          id: randomUUID(),
           title: validatedData.title,
-          content_type: validatedData.content_type,
-          content_data: validatedData.content_data,
-          created_by_user_id: session.user.id,
+          message: validatedData.message,
+          type: validatedData.type,
+          updated_at: new Date(),
         },
       });
 
@@ -119,8 +115,8 @@ export async function POST(request: Request) {
         // Create notification status entries for specific users
         const userNotificationStatuses = validatedData.user_ids.map(
           (userId) => ({
-            user_id: userId,
-            notification_id: notification.id,
+            userId: userId,
+            notificationId: notification.id,
           }),
         );
 
@@ -135,8 +131,8 @@ export async function POST(request: Request) {
 
         // Create notification status entries for all users
         const userNotificationStatuses = users.map((user) => ({
-          user_id: user.id,
-          notification_id: notification.id,
+          userId: user.id,
+          notificationId: notification.id,
         }));
 
         await prisma.idnbi_UserNotificationStatus.createMany({
@@ -147,13 +143,14 @@ export async function POST(request: Request) {
       // Log the action in AuditLog
       await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
+          id: randomUUID(),
+          userId: session.user.id,
           action: "CREATE",
-          resource_type: "NOTIFICATION",
-          resource_id: notification.id,
+          resource: "NOTIFICATION",
+          resourceId: notification.id,
           details: JSON.stringify({
             title: notification.title,
-            type: notification.content_type,
+            type: notification.type,
           }),
         },
       });

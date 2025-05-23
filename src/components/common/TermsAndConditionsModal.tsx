@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { SanitizedHTML } from "@/components/ui/sanitized-html";
+import { sanitizeHtml } from "@/components/ui/sanitized-html";
 
 interface TermsAndConditions {
   id: string;
@@ -132,7 +132,7 @@ export default function TermsAndConditionsModal() {
               <h2 className="font-semibold text-lg mb-2">
                 Version {termsContent.version}
               </h2>
-              <SanitizedHTML content={termsContent.content_html} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(termsContent.content_html) }} />
             </div>
           ) : (
             <div className="flex justify-center items-center py-8">
@@ -154,6 +154,7 @@ export default function TermsAndConditionsModal() {
 
         <DialogFooter>
           <Button
+            type="button"
             onClick={handleAcceptTerms}
             disabled={!termsAccepted || !termsContent || isSubmitting}
           >

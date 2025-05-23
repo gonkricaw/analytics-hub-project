@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 const contentSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -33,7 +34,10 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: {
+      title?: { contains: string; mode: "insensitive" };
+      type?: string;
+    } = {};
 
     if (search) {
       where.title = {
@@ -64,7 +68,7 @@ export async function GET(request: Request) {
         content_data: true,
         created_at: true,
         updated_at: true,
-        created_by_user: {
+        idnbi_User: {
           select: {
             id: true,
             name: true,
@@ -121,20 +125,24 @@ export async function POST(request: Request) {
       // For external_link_embed content, we'll use UUIDv4 for special access management
       const content = await prisma.idnbi_Content.create({
         data: {
+          id: randomUUID(),
           title: validatedData.title,
+          slug: validatedData.title.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
           type: validatedData.type,
           content_data: validatedData.content_data,
-          created_by_user_id: session.user.id,
+          created_by_id: session.user.id,
+          updated_at: new Date(),
         },
       });
 
       // Log the action in AuditLog
       await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
+          id: randomUUID(),
+          userId: session.user.id,
           action: "CREATE",
-          resource_type: "CONTENT",
-          resource_id: content.id,
+          resource: "CONTENT",
+          resourceId: content.id,
           details: JSON.stringify({
             title: content.title,
             type: content.type,

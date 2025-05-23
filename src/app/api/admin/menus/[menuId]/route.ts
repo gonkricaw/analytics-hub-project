@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Schema for menu item update
 const menuItemUpdateSchema = z.object({
@@ -47,9 +48,9 @@ export async function GET(
     const menuItem = await prisma.idnbi_MenuItem.findUnique({
       where: { id: menuId },
       include: {
-        menuItemRoles: {
+        idnbi_MenuRole: {
           select: {
-            role_id: true,
+            roleId: true,
           },
         },
       },
@@ -65,7 +66,7 @@ export async function GET(
     // Transform the data to include the roles array
     const response = {
       ...menuItem,
-      roles: menuItem.menuItemRoles.map((role) => role.role_id),
+      roles: menuItem.idnbi_MenuRole.map((role) => role.roleId),
     };
 
     return NextResponse.json(response, { status: 200 });
@@ -113,7 +114,7 @@ export async function PUT(
       const existingMenuItem = await prisma.idnbi_MenuItem.findUnique({
         where: { id: menuId },
         include: {
-          menuItemRoles: true,
+          idnbi_MenuRole: true,
         },
       });
 
@@ -127,8 +128,8 @@ export async function PUT(
       // Update the menu item transaction
       const updatedMenuItem = await prisma.$transaction(async (tx) => {
         // Delete all existing role associations
-        await tx.idnbi_MenuItemRole.deleteMany({
-          where: { menu_item_id: menuId },
+        await tx.idnbi_MenuRole.deleteMany({
+          where: { menuId: menuId },
         });
 
         // Update the menu item
@@ -147,10 +148,10 @@ export async function PUT(
 
         // Create new role associations
         for (const roleId of validatedData.roles) {
-          await tx.idnbi_MenuItemRole.create({
+          await tx.idnbi_MenuRole.create({
             data: {
-              menu_item_id: menuId,
-              role_id: roleId,
+              menuId: menuId,
+              roleId: roleId,
             },
           });
         }
@@ -161,10 +162,11 @@ export async function PUT(
       // Log the action in AuditLog
       await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
+          id: randomUUID(),
+          userId: session.user.id,
           action: "UPDATE",
-          resource_type: "MENU_ITEM",
-          resource_id: menuId,
+          resource: "MENU_ITEM",
+          resourceId: menuId,
           details: JSON.stringify({
             previous: existingMenuItem,
             updated: {
@@ -249,13 +251,8 @@ export async function DELETE(
     // Delete the menu item and its role associations
     await prisma.$transaction(async (tx) => {
       // Delete role associations first
-      await tx.idnbi_MenuItemRole.deleteMany({
-        where: { menu_item_id: menuId },
-      });
-
-      // Delete menu access logs
-      await tx.idnbi_MenuAccessLog.deleteMany({
-        where: { menu_item_id: menuId },
+      await tx.idnbi_MenuRole.deleteMany({
+        where: { menuId: menuId },
       });
 
       // Delete the menu item
@@ -267,10 +264,11 @@ export async function DELETE(
     // Log the action in AuditLog
     await prisma.idnbi_AuditLog.create({
       data: {
-        user_id: session.user.id,
+        id: randomUUID(),
+        userId: session.user.id,
         action: "DELETE",
-        resource_type: "MENU_ITEM",
-        resource_id: menuId,
+        resource: "MENU_ITEM",
+        resourceId: menuId,
         details: JSON.stringify(existingMenuItem),
       },
     });

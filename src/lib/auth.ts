@@ -2,13 +2,8 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 import prisma from "./prisma";
-import * as Sentry from "@sentry/nextjs";
-import { sendSystemWarningEmail } from "./email";
-import { getRateLimiter } from "./rate-limit";
-
-// Rate limiter for login attempts - 5 attempts per minute
-const loginRateLimiter = getRateLimiter("auth:login", 5, 60);
 
 /**
  * Record a failed login attempt, update user's failed login attempts count,
@@ -126,7 +121,11 @@ export const authOptions: NextAuthOptions = {
           const user = await prisma.idnbi_User.findUnique({
             where: { email: credentials.email },
             include: {
-              role: true,
+              idnbi_UserRole: {
+                include: {
+                  idnbi_Role: true,
+                },
+              },
             },
           }); // If the user doesn't exist, throw an error
           if (!user) {
@@ -136,7 +135,7 @@ export const authOptions: NextAuthOptions = {
           // Check if the password is correct
           const isPasswordCorrect = await compare(
             credentials.password,
-            user.password_hash,
+            user.password,
           );
 
           if (!isPasswordCorrect) {
@@ -147,12 +146,15 @@ export const authOptions: NextAuthOptions = {
 
           // Check if this is a temporary password that needs to be changed
           if (user.temp_password_flag) {
+            // Get the first role (in a real system you might want to handle multiple roles)
+            const userRole = user.idnbi_UserRole?.[0]?.idnbi_Role;
+            
             return {
               id: user.id,
               name: user.name,
               email: user.email,
-              role: user.role.name,
-              roleId: user.role_id,
+              role: userRole?.name || 'User',
+              roleId: userRole?.id || '',
               image: user.profile_photo_url,
               requirePasswordChange: true,
             };
@@ -176,22 +178,26 @@ export const authOptions: NextAuthOptions = {
           // Add audit log entry for successful login
           await prisma.idnbi_AuditLog.create({
             data: {
-              user_id: user.id,
-              action_type: "LOGIN",
-              target_resource: "AUTH",
-              target_resource_id: null,
+              id: uuidv4(),
+              userId: user.id,
+              action: "LOGIN",
+              resource: "AUTH",
+              resourceId: null,
               ip_address: "127.0.0.1", // In a real implementation, get the actual IP
-              details: "User logged in successfully",
+              details: { message: "User logged in successfully" },
             },
           });
 
+          // Get the first role (in a real system you might want to handle multiple roles)
+          const userRole = user.idnbi_UserRole?.[0]?.idnbi_Role;
+          
           // Return the user object
           return {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role.name,
-            roleId: user.role_id,
+            role: userRole?.name || 'User',
+            roleId: userRole?.id || '',
             image: user.profile_photo_url,
           };
         } catch (error) {

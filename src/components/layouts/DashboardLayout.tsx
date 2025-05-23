@@ -80,27 +80,27 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
-      {/* Navbar */}
-      <DynamicNavbar
-        title={systemConfig.appName}
-        logoSrc={systemConfig.logoUrl}
-        userName={currentUser.name}
-        userImage={currentUser.image}
-        notifications={currentUser.unreadNotifications}
-      />
+      <div className="min-h-screen flex flex-col bg-slate-950">
+        {/* Navbar */}
+        <DynamicNavbar
+          title={systemConfig.appName}
+          logoSrc={systemConfig.logoUrl}
+          userName={currentUser.name}
+          userImage={currentUser.image}
+          notifications={currentUser.unreadNotifications}
+        />
 
-      {/* Main content */}
-      <main className="flex-grow">{children}</main>
+        {/* Main content */}
+        <main className="flex-grow">{children}</main>
 
-      {/* Footer */}
-      <Footer />
+        {/* Footer */}
+        <Footer />
 
-      {/* Terms and Conditions Modal */}
-      <TermsAndConditionsModal />
+        {/* Terms and Conditions Modal */}
+        <TermsAndConditionsModal />
 
-      {/* Auto Logout Warning */}
-      <AutoLogoutWarning />
-    </div>
+        {/* Auto Logout Warning */}
+        <AutoLogoutWarning />
+      </div>
   );
 }

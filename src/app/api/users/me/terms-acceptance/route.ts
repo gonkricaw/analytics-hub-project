@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import authOptions from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
 import { withCsrfProtection } from "@/lib/csrf";
 import * as Sentry from "@sentry/nextjs";
+import crypto from "crypto";
 
 /**
  * POST /api/users/me/terms-acceptance
@@ -53,12 +54,15 @@ const handler = async (request: NextRequest) => {
     // Log the acceptance
     await prisma.idnbi_AuditLog.create({
       data: {
-        user_id: session.user.id,
-        action_type: "TERMS_ACCEPTANCE",
-        target_resource: "TERMS",
-        target_resource_id: termsId,
+        id: crypto.randomUUID(),
+        userId: session.user.id,
+        action: "TERMS_ACCEPTANCE",
+        resource: "TERMS",
+        resourceId: termsId,
         ip_address: request.headers.get("x-forwarded-for") || "127.0.0.1",
-        details: `User accepted terms and conditions version ${terms.version}`,
+        details: JSON.stringify({
+          message: `User accepted terms and conditions version ${terms.version}`
+        })
       },
     });
 

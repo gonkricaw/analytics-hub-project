@@ -187,3 +187,19 @@ model idnbi_UserRole {
 
   @@id([userId, roleId])
 }
+
+model idnbi_FailedLoginAttemptLog {
+  id         String   @id @default(uuid())
+  email      String
+  ip_address String
+  count      Int      @default(1)
+  timestamp  DateTime @default(now())
+
+  @@unique([email, ip_address])
+}
+
+model idnbi_IPBlocklist {
+  ip_address    String   @id
+  blocked_until DateTime
+  created_at    DateTime @default(now())
+}

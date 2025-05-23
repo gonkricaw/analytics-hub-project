@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import authOptions from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
 
 const contentUpdateSchema = z.object({
@@ -106,10 +106,10 @@ export async function PUT(
       // Log the action in AuditLog
       await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
+          userId: session.user.id,
           action: "UPDATE",
-          resource_type: "CONTENT",
-          resource_id: contentId,
+          resource: "CONTENT",
+          resourceId: contentId,
           details: JSON.stringify({
             previous: {
               title: existingContent.title,
@@ -197,10 +197,10 @@ export async function DELETE(
     // Log the action in AuditLog
     await prisma.idnbi_AuditLog.create({
       data: {
-        user_id: session.user.id,
+        userId: session.user.id,
         action: "DELETE",
-        resource_type: "CONTENT",
-        resource_id: contentId,
+        resource: "CONTENT",
+        resourceId: contentId,
         details: JSON.stringify(existingContent),
       },
     });

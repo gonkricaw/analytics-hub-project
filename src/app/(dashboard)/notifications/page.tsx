@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/ui-tabs";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";

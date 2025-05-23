@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image"; // Added for Next.js Image component
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +10,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "./navigation-menu";
@@ -35,6 +35,7 @@ export function DynamicNavbar({
   logoSrc = "/logo.png",
   userImage = "",
   userName = "User",
+  notifications = 0,
 }) {
   const [menuItems, setMenuItems] = useState<MenuItemModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,29 +43,39 @@ export function DynamicNavbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
+  const fetchMenuItems = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`/api/menus`, {
+          cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to fetch menu items");
+      }
+
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setMenuItems(data);
+      } else {
+        setMenuItems([]);
+        console.warn("Received non-array menu items:", data);
+      }
+    } catch (err) {
+      console.error("Error fetching menu items:", err);
+      setError("Failed to load navigation menu");
+      setMenuItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Fetch menu items when component mounts
   useEffect(() => {
-    const fetchMenuItems = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/menus");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch menu items");
-        }
-
-        const data = await response.json();
-        setMenuItems(data);
-      } catch (err) {
-        console.error("Error fetching menu items:", err);
-        setError("Failed to load navigation menu");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMenuItems();
-  }, []);
+  }, [fetchMenuItems]);
 
   // Function to log menu access for analytics
   const logMenuAccess = async (menuItemId: string) => {
@@ -121,16 +132,11 @@ export function DynamicNavbar({
           <Link
             href={url}
             onClick={() => logMenuAccess(item.id)}
-            legacyBehavior
-            passHref
+            className={`block select-none space-y-1 rounded-md p-3 hover:bg-slate-800 ${
+              pathname === url ? "bg-slate-800" : ""
+            }`}
           >
-            <NavigationMenuLink
-              className={`block select-none space-y-1 rounded-md p-3 hover:bg-slate-800 ${
-                pathname === url ? "bg-slate-800" : ""
-              }`}
-            >
-              {item.title}
-            </NavigationMenuLink>
+            {item.title}
           </Link>
         ) : (
           <a
@@ -146,7 +152,6 @@ export function DynamicNavbar({
       </NavigationMenuItem>
     );
   };
-
   // Render a submenu item as a simple link
   const renderSubMenuItem = (item: MenuItemModel) => {
     const isInternal = item.type === "link_internal";
@@ -156,25 +161,33 @@ export function DynamicNavbar({
         : "#"
       : item.target_url || "#";
 
-    return isInternal ? (
-      <Link
-        href={url}
-        onClick={() => logMenuAccess(item.id)}
-        className="block select-none space-y-1 rounded-md p-3 hover:bg-slate-800"
-      >
-        {item.title}
-      </Link>
-    ) : (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => logMenuAccess(item.id)}
-        className="block select-none space-y-1 rounded-md p-3 hover:bg-slate-800"
-      >
-        {item.title}
-      </a>
-    );
+    const commonClasses = "block select-none space-y-1 rounded-md p-3 hover:bg-slate-800";
+
+    if (isInternal) {
+      return (
+        <Link
+          href={url}
+          onClick={() => logMenuAccess(item.id)}
+          className={`${commonClasses} ${
+            pathname === url ? "bg-slate-800" : ""
+          }`}
+        >
+          {item.title}
+        </Link>
+      );
+    } else { // External link
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => logMenuAccess(item.id)}
+          className={commonClasses}
+        >
+          {item.title}
+        </a>
+      );
+    }
   };
 
   return (
@@ -194,12 +207,13 @@ export function DynamicNavbar({
             <Link href="/">
               {" "}
               {logoSrc ? (
-                <div className="relative h-10 w-10">
-                  <div
-                    className="h-10 w-10 bg-contain bg-center bg-no-repeat"
-                    style={{ backgroundImage: `url(${logoSrc})` }}
-                    role="img"
-                    aria-label="Logo"
+                <div className="relative h-10 w-10"> {/* Container for Next/Image with fill */}
+                  <Image
+                    src={logoSrc}
+                    alt={title || "Application Logo"}
+                    fill
+                    className="object-contain"
+                    priority // Consider making logo priority for LCP
                   />
                 </div>
               ) : (
@@ -217,14 +231,28 @@ export function DynamicNavbar({
         <div className="hidden md:block">
           {loading ? (
             <div className="h-10 flex items-center text-gray-400">
-              Loading menu...
+              <span className="animate-pulse">Loading menu...</span>
             </div>
           ) : error ? (
-            <div className="h-10 flex items-center text-red-400">{error}</div>
+            <div className="h-10 flex items-center gap-2">
+              <span className="text-red-400">{error}</span>
+              <button
+                onClick={fetchMenuItems}
+                className="text-white bg-blue-600 hover:bg-blue-700 px-2 py-0.5 text-xs rounded-md"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <NavigationMenu>
               <NavigationMenuList>
-                {menuItems.map(renderMenuItem)}
+                {menuItems.length > 0 ? (
+                  menuItems.map(renderMenuItem)
+                ) : (
+                  <NavigationMenuItem>
+                    <span className="text-gray-400 px-3 py-2">No menu items available</span>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenuList>
             </NavigationMenu>
           )}
@@ -237,7 +265,7 @@ export function DynamicNavbar({
             whileTap={{ scale: 0.95 }}
             className="relative"
           >
-            <NotificationDropdown />
+            <NotificationDropdown count={notifications} />
           </motion.div>
 
           {/* User Avatar */}
@@ -282,9 +310,19 @@ export function DynamicNavbar({
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
               {loading ? (
-                <div className="text-gray-400">Loading menu...</div>
+                <div className="text-gray-400 animate-pulse">Loading menu...</div>
               ) : error ? (
-                <div className="text-red-400">{error}</div>
+                <div className="flex flex-col gap-2">
+                  <div className="text-red-400">{error}</div>
+                  <button
+                    onClick={fetchMenuItems}
+                    className="self-start text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm rounded-md"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : menuItems.length === 0 ? (
+                <div className="text-gray-400">No menu items available</div>
               ) : (
                 <nav className="space-y-3">
                   {menuItems.map((item) => {
@@ -315,7 +353,9 @@ export function DynamicNavbar({
                                     logMenuAccess(child.id);
                                     setMobileMenuOpen(false);
                                   }}
-                                  className="block text-gray-300 hover:text-white py-1"
+                                  className={`block py-1 ${
+                                    pathname === url ? "text-white font-semibold" : "text-gray-300 hover:text-white"
+                                  }`}
                                 >
                                   {child.title}
                                 </Link>
@@ -329,7 +369,9 @@ export function DynamicNavbar({
                                     logMenuAccess(child.id);
                                     setMobileMenuOpen(false);
                                   }}
-                                  className="block text-gray-300 hover:text-white py-1"
+                                  className={`block py-1 ${
+                                    pathname === url ? "text-white font-semibold" : "text-gray-300 hover:text-white"
+                                  }`}
                                 >
                                   {child.title}
                                 </a>
@@ -357,7 +399,9 @@ export function DynamicNavbar({
                             logMenuAccess(item.id);
                             setMobileMenuOpen(false);
                           }}
-                          className="block font-medium text-white py-1"
+                          className={`block font-medium py-1 ${
+                            pathname === url ? "text-white underline" : "text-gray-200 hover:text-white"
+                          }`}
                         >
                           {item.title}
                         </Link>
@@ -371,7 +415,9 @@ export function DynamicNavbar({
                             logMenuAccess(item.id);
                             setMobileMenuOpen(false);
                           }}
-                          className="block font-medium text-white py-1"
+                          className={`block font-medium py-1 ${
+                            pathname === url ? "text-white underline" : "text-gray-200 hover:text-white"
+                          }`}
                         >
                           {item.title}
                         </a>

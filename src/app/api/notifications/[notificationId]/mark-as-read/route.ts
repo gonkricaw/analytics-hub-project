@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function POST(
   request: Request,
@@ -23,9 +23,9 @@ export async function POST(
     // Check if notification exists for this user
     const notification = await prisma.idnbi_UserNotificationStatus.findUnique({
       where: {
-        user_id_notification_id: {
-          user_id: session.user.id,
-          notification_id: notificationId,
+        userId_notificationId: {
+          userId: session.user.id,
+          notificationId: notificationId,
         },
       },
     });
@@ -41,13 +41,13 @@ export async function POST(
     const updatedNotification =
       await prisma.idnbi_UserNotificationStatus.update({
         where: {
-          user_id_notification_id: {
-            user_id: session.user.id,
-            notification_id: notificationId,
+          userId_notificationId: {
+            userId: session.user.id,
+            notificationId: notificationId,
           },
         },
         data: {
-          is_read: true,
+          read: true,
           read_at: new Date(),
         },
       });

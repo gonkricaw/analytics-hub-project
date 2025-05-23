@@ -11,8 +11,10 @@ declare global {
 // exhausting your database connection limit.
 //
 // Learn more: https://pris.ly/d/help/next-js-best-practices
-const prisma = global.prisma || new PrismaClient();
+const prismaClient = global.prisma || new PrismaClient();
 
-if (process.env.NODE_ENV === "development") global.prisma = prisma;
+if (process.env.NODE_ENV === "development") global.prisma = prismaClient;
 
-export default prisma;
+// Export both default and named export for flexibility
+export const prisma = prismaClient;
+export default prismaClient;

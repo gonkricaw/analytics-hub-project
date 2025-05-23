@@ -1,0 +1,153 @@
+import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { randomUUID } from "crypto";
+import prisma from "./prisma";
+
+// Map to store rate limiters by identifier
+const ratelimitMap = new Map<string, Ratelimit>();
+
+// Initialize Redis client if in production
+let redis: Redis | undefined;
+if (process.env.NODE_ENV === "production" && process.env.UPSTASH_REDIS_REST_URL) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+  });
+}
+
+/**
+ * Get or create a rate limiter for a specific identifier
+ */
+function getRateLimiter(identifier: string, limit: number, window: number): Ratelimit {
+  // Check if we already have a rate limiter for this identifier
+  const existingLimiter = ratelimitMap.get(identifier);
+  if (existingLimiter) {
+    return existingLimiter;
+  }
+
+  // Create new rate limiter
+  const newLimiter = new Ratelimit({
+    redis: redis,
+    limiter: redis ? Ratelimit.slidingWindow(limit, `${window}s`) : Ratelimit.slidingWindow(limit, `${window}s`),
+    analytics: true,
+    prefix: `ratelimit:${identifier}`,
+    ephemeralCache: !redis, // Use memory cache if Redis is not available
+  });
+
+  // Store for future use
+  ratelimitMap.set(identifier, newLimiter);
+  return newLimiter;
+}
+
+/**
+ * Log failed login attempt to database and block IP if needed
+ */
+export async function logFailedLoginAttempt(
+  email: string,
+  ip: string
+): Promise<boolean> {
+  try {
+    // Get current timestamp
+    const now = new Date();
+
+    // Find or create login attempt record
+    const record = await prisma.idnbi_FailedLoginAttemptLog.upsert({
+      where: {
+        email_ip_address: {
+          email,
+          ip_address: ip,
+        },
+      },
+      update: {
+        count: { increment: 1 },
+        timestamp: now,
+      },
+      create: {
+        id: randomUUID(),
+        email,
+        ip_address: ip,
+        count: 1,
+        timestamp: now,
+      },
+    });
+
+    // Check if attempts exceed threshold
+    const maxAttempts = parseInt(process.env.LOGIN_ATTEMPTS_LIMIT || "5", 10);
+    
+    if (record.count >= maxAttempts) {
+      // Block the IP
+      const blockHours = parseInt(process.env.IP_BLOCK_DURATION_HOURS || "24", 10);
+      const blockedUntil = new Date(now.getTime() + blockHours * 60 * 60 * 1000);
+
+      // Add to IP blocklist
+      await prisma.idnbi_IPBlocklist.upsert({
+        where: { ip_address: ip },
+        update: { blocked_until: blockedUntil },
+        create: {
+          ip_address: ip,
+          blocked_until: blockedUntil,
+        },
+      });
+
+      return true; // IP was blocked
+    }
+
+    return false; // IP not blocked
+  } catch (error) {
+    console.error("Error logging failed login attempt:", error);
+    return false;
+  }
+}
+
+/**
+ * Apply rate limiting to a request
+ */
+export async function applyRateLimit(
+  request: NextRequest,
+  identifier: string,
+  limit: number = 10,
+  window: number = 60,
+): Promise<NextResponse | null> {
+  try {
+    // Get IP address from request
+    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
+
+    // Get rate limiter for this identifier
+    const limiter = getRateLimiter(identifier, limit, window);
+
+    // Apply rate limiting based on IP address
+    const {
+      success,
+      limit: rateLimit,
+      remaining,
+      reset,
+    } = await limiter.limit(ip);
+
+    // If rate limit is exceeded, return error response
+    if (!success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too many requests",
+          message: "Please try again later",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": rateLimit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        }
+      );
+    }
+
+    // If rate limit is not exceeded, return null to allow the request to proceed
+    return null;
+  } catch (error) {
+    console.error("Error applying rate limit:", error);
+    // On error, allow the request to proceed rather than blocking legitimate traffic
+    return null;
+  }
+}

@@ -120,60 +120,16 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.Idnbi_UserScalarFieldEnum = {
+exports.Prisma.Idnbi_AuditLogScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  email: 'email',
-  password: 'password',
-  status: 'status',
-  profile_photo_url: 'profile_photo_url',
-  last_login_at: 'last_login_at',
-  last_login_ip: 'last_login_ip',
-  failed_login_attempts: 'failed_login_attempts',
-  is_ip_blocked: 'is_ip_blocked',
-  terms_accepted_at: 'terms_accepted_at',
-  invited_at: 'invited_at',
-  registered_at: 'registered_at',
-  temp_password_flag: 'temp_password_flag',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
-exports.Prisma.Idnbi_RoleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
-exports.Prisma.Idnbi_UserRoleScalarFieldEnum = {
   userId: 'userId',
-  roleId: 'roleId',
+  action: 'action',
+  resource: 'resource',
+  resourceId: 'resourceId',
+  details: 'details',
+  ip_address: 'ip_address',
+  user_agent: 'user_agent',
   created_at: 'created_at'
-};
-
-exports.Prisma.Idnbi_PermissionScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
-exports.Prisma.Idnbi_RolePermissionScalarFieldEnum = {
-  roleId: 'roleId',
-  permissionId: 'permissionId',
-  created_at: 'created_at'
-};
-
-exports.Prisma.Idnbi_TermsAndConditionsScalarFieldEnum = {
-  id: 'id',
-  version: 'version',
-  content_html: 'content_html',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-  published_at: 'published_at'
 };
 
 exports.Prisma.Idnbi_ContentScalarFieldEnum = {
@@ -183,6 +139,15 @@ exports.Prisma.Idnbi_ContentScalarFieldEnum = {
   type: 'type',
   content_data: 'content_data',
   created_by_id: 'created_by_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.Idnbi_EmailTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  subject: 'subject',
+  content: 'content',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -215,21 +180,35 @@ exports.Prisma.Idnbi_NotificationScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.Idnbi_UserNotificationStatusScalarFieldEnum = {
+exports.Prisma.Idnbi_PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
   userId: 'userId',
-  notificationId: 'notificationId',
-  read: 'read',
-  read_at: 'read_at',
+  token: 'token',
+  expires_at: 'expires_at',
+  is_used: 'is_used',
   created_at: 'created_at'
 };
 
-exports.Prisma.Idnbi_EmailTemplateScalarFieldEnum = {
+exports.Prisma.Idnbi_PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  subject: 'subject',
-  content: 'content',
+  description: 'description',
   created_at: 'created_at',
   updated_at: 'updated_at'
+};
+
+exports.Prisma.Idnbi_RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.Idnbi_RolePermissionScalarFieldEnum = {
+  roleId: 'roleId',
+  permissionId: 'permissionId',
+  created_at: 'created_at'
 };
 
 exports.Prisma.Idnbi_SystemConfigurationScalarFieldEnum = {
@@ -245,24 +224,59 @@ exports.Prisma.Idnbi_SystemConfigurationScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.Idnbi_AuditLogScalarFieldEnum = {
+exports.Prisma.Idnbi_TermsAndConditionsScalarFieldEnum = {
   id: 'id',
+  version: 'version',
+  content_html: 'content_html',
+  created_at: 'created_at',
+  updated_at: 'updated_at',
+  published_at: 'published_at'
+};
+
+exports.Prisma.Idnbi_UserScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  status: 'status',
+  profile_photo_url: 'profile_photo_url',
+  last_login_at: 'last_login_at',
+  last_login_ip: 'last_login_ip',
+  failed_login_attempts: 'failed_login_attempts',
+  is_ip_blocked: 'is_ip_blocked',
+  terms_accepted_at: 'terms_accepted_at',
+  invited_at: 'invited_at',
+  registered_at: 'registered_at',
+  temp_password_flag: 'temp_password_flag',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.Idnbi_UserNotificationStatusScalarFieldEnum = {
   userId: 'userId',
-  action: 'action',
-  resource: 'resource',
-  resourceId: 'resourceId',
-  details: 'details',
-  ip_address: 'ip_address',
-  user_agent: 'user_agent',
+  notificationId: 'notificationId',
+  read: 'read',
+  read_at: 'read_at',
   created_at: 'created_at'
 };
 
-exports.Prisma.Idnbi_PasswordResetTokenScalarFieldEnum = {
-  id: 'id',
+exports.Prisma.Idnbi_UserRoleScalarFieldEnum = {
   userId: 'userId',
-  token: 'token',
-  expires_at: 'expires_at',
-  is_used: 'is_used',
+  roleId: 'roleId',
+  created_at: 'created_at'
+};
+
+exports.Prisma.Idnbi_FailedLoginAttemptLogScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  ip_address: 'ip_address',
+  count: 'count',
+  timestamp: 'timestamp'
+};
+
+exports.Prisma.Idnbi_IPBlocklistScalarFieldEnum = {
+  ip_address: 'ip_address',
+  blocked_until: 'blocked_until',
   created_at: 'created_at'
 };
 
@@ -281,34 +295,36 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
-};
-
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-  idnbi_User: 'idnbi_User',
-  idnbi_Role: 'idnbi_Role',
-  idnbi_UserRole: 'idnbi_UserRole',
-  idnbi_Permission: 'idnbi_Permission',
-  idnbi_RolePermission: 'idnbi_RolePermission',
-  idnbi_TermsAndConditions: 'idnbi_TermsAndConditions',
+  idnbi_AuditLog: 'idnbi_AuditLog',
   idnbi_Content: 'idnbi_Content',
+  idnbi_EmailTemplate: 'idnbi_EmailTemplate',
   idnbi_MenuItem: 'idnbi_MenuItem',
   idnbi_MenuRole: 'idnbi_MenuRole',
   idnbi_Notification: 'idnbi_Notification',
-  idnbi_UserNotificationStatus: 'idnbi_UserNotificationStatus',
-  idnbi_EmailTemplate: 'idnbi_EmailTemplate',
+  idnbi_PasswordResetToken: 'idnbi_PasswordResetToken',
+  idnbi_Permission: 'idnbi_Permission',
+  idnbi_Role: 'idnbi_Role',
+  idnbi_RolePermission: 'idnbi_RolePermission',
   idnbi_SystemConfiguration: 'idnbi_SystemConfiguration',
-  idnbi_AuditLog: 'idnbi_AuditLog',
-  idnbi_PasswordResetToken: 'idnbi_PasswordResetToken'
+  idnbi_TermsAndConditions: 'idnbi_TermsAndConditions',
+  idnbi_User: 'idnbi_User',
+  idnbi_UserNotificationStatus: 'idnbi_UserNotificationStatus',
+  idnbi_UserRole: 'idnbi_UserRole',
+  idnbi_FailedLoginAttemptLog: 'idnbi_FailedLoginAttemptLog',
+  idnbi_IPBlocklist: 'idnbi_IPBlocklist'
 };
 
 /**

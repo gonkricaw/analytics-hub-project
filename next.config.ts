@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from '@sentry/nextjs';
+// import { withSentryConfig } from '@sentry/nextjs';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 // Import security headers
@@ -30,15 +30,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
-  // Enable Turbopack
-  turbo: {
-    // Example: adding an alias and custom file extension
-    resolveAlias: {
-      underscore: 'lodash',
-    },
-    resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
-  },
 };
 
 
@@ -46,18 +37,21 @@ const nextConfig: NextConfig = {
 // Apply bundle analyzer
 const configWithBundleAnalyzer = bundleAnalyzer(nextConfig);
 
-// Configure Sentry with updated options
-export default withSentryConfig(
-  configWithBundleAnalyzer,
-  {
-    // Only enable in production
-    silent: process.env.NODE_ENV !== 'production'
-  },
-  {
-    // For all available options, see:
-    // https://github.com/getsentry/sentry-webpack-plugin#options
-    org: process.env.SENTRY_ORG || '',
-    project: process.env.SENTRY_PROJECT || '',
-    authToken: process.env.SENTRY_AUTH_TOKEN || '',
-  }
-);
+// Export config without Sentry for debugging
+export default configWithBundleAnalyzer;
+
+// Configure Sentry with updated options (temporarily disabled)
+// export default withSentryConfig(
+//   configWithBundleAnalyzer,
+//   {
+//     // Only enable in production
+//     silent: process.env.NODE_ENV !== 'production'
+//   },
+//   {
+//     // For all available options, see:
+//     // https://github.com/getsentry/sentry-webpack-plugin#options
+//     org: process.env.SENTRY_ORG || '',
+//     project: process.env.SENTRY_PROJECT || '',
+//     authToken: process.env.SENTRY_AUTH_TOKEN || '',
+//   }
+// );

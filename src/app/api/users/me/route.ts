@@ -33,11 +33,15 @@ export async function GET() {
         id: session.user.id,
       },
       include: {
-        role: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
+        idnbi_UserRole: {
+          include: {
+            idnbi_Role: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
           },
         },
       },
@@ -48,13 +52,16 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Extract the first role (assuming users have exactly one role)
+    const role = user.idnbi_UserRole[0]?.idnbi_Role || null;
+
     // Return the user data without sensitive information
     return NextResponse.json({
       id: user.id,
       name: user.name,
       email: user.email,
       profile_photo_url: user.profile_photo_url,
-      role: user.role,
+      role: role,
       terms_accepted_at: user.terms_accepted_at,
       registered_at: user.registered_at,
       last_login_at: user.last_login_at,

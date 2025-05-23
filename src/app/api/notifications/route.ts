@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { cacheableValue } from "@/lib/cache";
 import * as Sentry from "@sentry/nextjs";
 
@@ -9,13 +9,14 @@ import * as Sentry from "@sentry/nextjs";
 interface Notification {
   id: string;
   title: string;
-  content: string;
+  message: string;
   created_at: Date;
-  is_read: boolean;
-  notification: {
+  read: boolean;
+  idnbi_Notification: {
     id: string;
     type: string;
-    priority: string;
+    title: string;
+    message: string;
   };
 }
 
@@ -41,15 +42,15 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: { user_id: string; is_read?: boolean } = {
-      user_id: session.user.id,
+    const where: { userId: string; read?: boolean } = {
+      userId: session.user.id,
     };
 
     // Filter by read status if specified
     if (read === "true") {
-      where.is_read = true;
+      where.read = true;
     } else if (read === "false") {
-      where.is_read = false;
+      where.read = false;
     }
 
     // Cache key based on user and filters - shorter TTL for unread notifications
@@ -70,11 +71,11 @@ export async function GET(request: Request) {
         });
 
         // Get notifications with user status
-        const notifications =
+        const notificationStatuses =
           await prisma.idnbi_UserNotificationStatus.findMany({
             where,
             include: {
-              notification: true,
+              idnbi_Notification: true,
             },
             orderBy: {
               created_at: "desc",
@@ -82,6 +83,16 @@ export async function GET(request: Request) {
             skip,
             take: limit,
           });
+
+        // Transform the data to match the Notification interface
+        const notifications: Notification[] = notificationStatuses.map((status) => ({
+          id: status.notificationId,
+          title: status.idnbi_Notification.title,
+          message: status.idnbi_Notification.message,
+          created_at: status.created_at,
+          read: status.read,
+          idnbi_Notification: status.idnbi_Notification,
+        }));
 
         return { notifications, totalCount };
       },

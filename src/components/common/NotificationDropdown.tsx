@@ -28,15 +28,23 @@ type Notification = {
 
 interface NotificationDropdownProps {
   limit?: number;
+  count?: number;
 }
 
-export function NotificationDropdown({ limit = 5 }: NotificationDropdownProps) {
+export function NotificationDropdown({ limit = 5, count }: NotificationDropdownProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(count || 0);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+
+  // Update unreadCount when count prop changes
+  useEffect(() => {
+    if (count !== undefined) {
+      setUnreadCount(count);
+    }
+  }, [count]);
 
   const fetchNotifications = async () => {
     try {

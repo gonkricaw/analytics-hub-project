@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimitRequest } from "@/lib/rate-limit";
-import { getServerSession } from "next-auth";
-import { signIn } from "next-auth/react";
 import * as Sentry from "@sentry/nextjs";
-import authOptions from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { createAuditLogServer } from "@/lib/auditLog";
+import { createServerAuditLog } from "@/lib/auditLog";
 import { sendSystemWarningEmail } from "@/lib/email";
 
 /**
@@ -23,24 +20,25 @@ export async function POST(request: NextRequest) {
     );
     if (rateLimitResponse) {
       // Rate limit exceeded
-      await createAuditLogServer({
-        action_type: "LOGIN_RATE_LIMIT",
-        target_resource: "USER",
-        ip_address:
-          request.ip || request.headers.get("x-forwarded-for") || "127.0.0.1",
-        details: JSON.stringify({
+      await createServerAuditLog({
+        actionType: "LOGIN_RATE_LIMIT",
+        targetResource: "USER",
+        ipAddress:
+          request.headers.get("x-forwarded-for") || "127.0.0.1",
+        details: {
           message: "Rate limit exceeded for login attempts",
           ip:
-            request.ip || request.headers.get("x-forwarded-for") || "127.0.0.1",
-        }),
+            request.headers.get("x-forwarded-for") || "127.0.0.1",
+        },
+        headers: request.headers,
       });
 
       // Send system warning for repeated rate limit violations
       const ip =
-        request.ip || request.headers.get("x-forwarded-for") || "127.0.0.1";
+        request.headers.get("x-forwarded-for") || "127.0.0.1";
       const recentViolations = await prisma.idnbi_AuditLog.count({
         where: {
-          action_type: "LOGIN_RATE_LIMIT",
+          action: "LOGIN_RATE_LIMIT",
           ip_address: ip,
           created_at: {
             gte: new Date(Date.now() - 10 * 60 * 1000), // Last 10 minutes
@@ -65,7 +63,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get body data
-    const { email, password, callbackUrl } = await request.json();
+    const { email, callbackUrl } = await request.json();
+    // Password will be handled by NextAuth later
 
     // Check if email is provided
     if (!email) {
@@ -74,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Check if IP is blocked
     const ip =
-      request.ip || request.headers.get("x-forwarded-for") || "127.0.0.1";
+      request.headers.get("x-forwarded-for") || "127.0.0.1";
     const blockedIP = await prisma.idnbi_IPBlocklist.findUnique({
       where: {
         ip_address: ip,
@@ -85,14 +84,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (blockedIP) {
-      await createAuditLogServer({
-        action_type: "LOGIN_BLOCKED_IP",
-        target_resource: "USER",
-        ip_address: ip,
-        details: JSON.stringify({
+      await createServerAuditLog({
+        actionType: "LOGIN_BLOCKED_IP",
+        targetResource: "USER",
+        ipAddress: ip,
+        details: {
           message: "Login attempt from blocked IP address",
           email,
-        }),
+        },
+        headers: request.headers,
       });
 
       return NextResponse.json(
@@ -105,20 +105,25 @@ export async function POST(request: NextRequest) {
     const user = await prisma.idnbi_User.findUnique({
       where: { email },
       include: {
-        role: true,
+        idnbi_UserRole: {
+          include: {
+            idnbi_Role: true,
+          },
+        },
       },
     });
 
     if (user?.is_ip_blocked) {
-      await createAuditLogServer({
-        action_type: "LOGIN_BLOCKED_USER",
-        target_resource: "USER",
-        target_resource_id: user.id,
-        ip_address: ip,
-        details: JSON.stringify({
+      await createServerAuditLog({
+        actionType: "LOGIN_BLOCKED_USER",
+        targetResource: "USER",
+        targetResourceId: user.id,
+        ipAddress: ip,
+        details: {
           message: "Login attempt from blocked user",
           email,
-        }),
+        },
+        headers: request.headers,
       });
 
       return NextResponse.json(

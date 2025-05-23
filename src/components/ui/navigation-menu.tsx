@@ -121,21 +121,30 @@ function NavigationMenuViewport({
   );
 }
 
-function NavigationMenuLink({
-  className,
-  ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
+const NavigationMenuLink = React.forwardRef<
+  React.ElementRef<typeof NavigationMenuPrimitive.Link>,
+  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Link>
+>(({ className, children, asChild, ...props }, ref) => { 
+  // The `asChild` prop is destructured from `props` here.
+  // This ensures it's not passed down to `NavigationMenuPrimitive.Link` via `...props`.
+  // Destructure `asChild` from props. We don't want to pass `next/link`'s `asChild`
+  // to `NavigationMenuPrimitive.Link` because we want the primitive to render
+  // the actual <a> tag when it receives an `href` (which it does via `...props`).
   return (
     <NavigationMenuPrimitive.Link
+      ref={ref}
       data-slot="navigation-menu-link"
       className={cn(
         "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </NavigationMenuPrimitive.Link>
   );
-}
+});
+NavigationMenuLink.displayName = NavigationMenuPrimitive.Link.displayName || "NavigationMenuLink";
 
 function NavigationMenuIndicator({
   className,

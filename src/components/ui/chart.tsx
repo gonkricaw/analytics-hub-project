@@ -8,6 +8,7 @@ import { Card } from "./card";
 // Dynamically import ApexCharts with no SSR to prevent hydration issues
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
+  loading: () => <div className="h-[350px] flex items-center justify-center">Loading chart...</div>
 });
 
 interface ChartProps {
@@ -71,15 +72,13 @@ export function Chart({
         </div>
       )}
       <div className="p-4">
-        {typeof window !== "undefined" && (
-          <ReactApexChart
-            type={type}
-            series={series}
-            options={defaultOptions}
-            height={height}
-            width={width}
-          />
-        )}
+        <ReactApexChart
+          type={type}
+          series={series}
+          options={defaultOptions}
+          height={height}
+          width={width}
+        />
       </div>
     </Card>
   );

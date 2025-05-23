@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MSWInitializer } from "@/mocks/initialize";
 import { Toaster } from "@/components/ui/sonner";
+import NextAuthSessionProvider from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({
       >
         {/* Initialize MSW in development environment */}
         {process.env.NODE_ENV === "development" && <MSWInitializer />}
-        {children}
+        <NextAuthSessionProvider>
+          {children}
+        </NextAuthSessionProvider>
         <Toaster position="top-right" />
       </body>
     </html>

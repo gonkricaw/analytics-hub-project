@@ -1,38 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Initialize MSW in browser environment only
 export function MSWInitializer() {
-  const [isInitialized, setIsInitialized] = useState(false);
-
   useEffect(() => {
-    // Only run in browser environment and in development mode
-    if (
-      typeof window !== "undefined" &&
-      process.env.NODE_ENV === "development"
-    ) {
-      // Dynamic import to avoid loading MSW in production
-      import("../mocks/browser")
-        .then(({ worker }) => {
-          // Expose worker globally for development debugging
+    async function startMSW() {
+      if (
+        typeof window !== "undefined" &&
+        process.env.NODE_ENV === "development"
+      ) {
+        try {
+          const { worker } = await import("../mocks/browser");
+          
+          // Expose worker globally for debugging
           window.msw = { worker };
-
-          // Start the worker
-          worker.start({
-            onUnhandledRequest: "bypass", // Don't warn on unhandled requests
+          
+          await worker.start({
+            onUnhandledRequest: "bypass",
+            serviceWorker: {
+              url: "/mockServiceWorker.js"
+            }
           });
-
-          setIsInitialized(true);
+          
           console.log("[MSW] Mock Service Worker initialized successfully");
-        })
-        .catch((error) => {
-          console.error(
-            "[MSW] Failed to initialize Mock Service Worker:",
-            error,
-          );
-        });
+        } catch (error) {
+          console.error("[MSW] Failed to initialize Mock Service Worker:", error);
+        }
+      }
     }
+    
+    startMSW();
   }, []);
 
   return null;

@@ -1,0 +1,38 @@
+
+> analytics-hub-project@0.1.0 build
+> next build
+
+   ▲ Next.js 15.3.2
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+glob error [Error: EPERM: operation not permitted, scandir 'C:\Users\GNKR\Application Data'] {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'scandir',
+  path: 'C:\\Users\\GNKR\\Application Data'
+}
+Failed to compile.
+
+Error: EPERM: operation not permitted, scandir 'C:\Users\GNKR\Application Data'
+
+./src/instrumentation.ts:7:11
+Module not found: Can't resolve './sentry.edge.config'
+   5 |
+   6 |   if (process.env.NEXT_RUNTIME === 'edge') {
+>  7 |     await import('./sentry.edge.config');
+     |           ^
+   8 |   }
+   9 | }
+  10 |
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors
+[2025-05-23T12:11:40.127Z] Script started
+[2025-05-23T12:11:40.137Z] Starting log-based seed test...
+[2025-05-23T12:11:40.138Z] Attempting to create a test role...
+[2025-05-23T12:11:40.591Z] Test role created successfully with ID: 8464c391-c335-49d8-a6b2-36e0c2a07497
+[2025-05-23T12:11:40.593Z] Disconnecting from database...
+[2025-05-23T12:11:40.612Z] Done

@@ -1,9 +1,36 @@
+// filepath: d:\Project\NEXTJS\analytics-hub-project\src\app\api\menus\route.ts
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { cacheableValue } from "@/lib/cache";
 import * as Sentry from "@sentry/nextjs";
+
+// Define types for menu items in the API response
+export type MenuItem = {
+  id: string;
+  title: string;
+  parent_id: string | null;
+  order: number;
+  icon_class: string | null;
+  type: "link_internal" | "link_external" | "dropdown";
+  target_url: string | null;
+  content_id: string | null;
+  children: MenuItem[];
+};
+
+// Define a type for the menu items from the database
+interface DBMenuItem {
+  id: string;
+  title: string;
+  parent_id: string | null;
+  order: number;
+  icon_class: string | null;
+  type: string;
+  target_url: string | null;
+  content_id: string | null;
+  other_idnbi_MenuItem?: DBMenuItem[];
+}
 
 export async function GET() {
   try {
@@ -24,59 +51,98 @@ export async function GET() {
         { error: "User role not defined" },
         { status: 400 },
       );
-    } // Define types for menu items
-    type MenuItem = {
-      id: string;
-      title: string;
-      url: string;
-      icon?: string | null;
-      parent_id?: string | null;
-      order: number;
-      is_active: boolean;
-      children: MenuItem[];
-    };
+    }
 
     // Get all menu items with caching based on user role
     // Cache for 30 minutes (1800 seconds) - balance between performance and updates
-    const menuItems = await cacheableValue<MenuItem[]>(
-      `menus:role:${roleId}`,
-      async () => {
-        // Fetch menu items from database
-        return prisma.idnbi_MenuItem.findMany({
-          where: {
-            menuItemRoles: {
-              some: {
-                role_id: roleId,
+    let dbMenuItems: DBMenuItem[] = [];
+    
+    try {
+      dbMenuItems = await cacheableValue<DBMenuItem[]>(
+        `menus:role:${roleId}`,
+        async () => {
+          // Fetch menu items from database
+          return await prisma.idnbi_MenuItem.findMany({
+            where: {
+              idnbi_MenuRole: {
+                some: {
+                  roleId: roleId,
+                },
               },
             },
-          },
-          include: {
-            children: {
-              include: {
-                children: true, // For handling up to 3 levels of menu hierarchy
+            include: {
+              other_idnbi_MenuItem: {
+                include: {
+                  other_idnbi_MenuItem: true, // For handling up to 3 levels of menu hierarchy
+                },
               },
             },
+            orderBy: {
+              order: "asc",
+            },
+          });
+        },
+        { expireInSeconds: 1800 },
+      );
+    } catch (cacheError) {
+      console.error("Cache error, falling back to direct DB query:", cacheError);
+      
+      // Fall back to direct database query without caching
+      dbMenuItems = await prisma.idnbi_MenuItem.findMany({
+        where: {
+          idnbi_MenuRole: {
+            some: {
+              roleId: roleId,
+            },
           },
-          orderBy: {
-            order: "asc",
+        },
+        include: {
+          other_idnbi_MenuItem: {
+            include: {
+              other_idnbi_MenuItem: true,
+            },
           },
-        });
-      },
-      { expireInSeconds: 1800 },
-    );
+        },
+        orderBy: {
+          order: "asc",
+        },
+      });
+    }
+
+    // Convert DB menu items to API menu items
+    const convertToMenuItem = (dbItem: DBMenuItem): MenuItem => {
+      // Determine the type based on whether it has children
+      let menuType: MenuItem['type'] = "link_internal";
+      
+      if (dbItem.type === "link_external") {
+        menuType = "link_external";
+      } else if (
+        dbItem.other_idnbi_MenuItem && 
+        dbItem.other_idnbi_MenuItem.length > 0
+      ) {
+        menuType = "dropdown";
+      }
+      
+      return {
+        id: dbItem.id,
+        title: dbItem.title,
+        parent_id: dbItem.parent_id,
+        order: dbItem.order,
+        icon_class: dbItem.icon_class,
+        type: menuType,
+        target_url: dbItem.target_url,
+        content_id: dbItem.content_id,
+        children: dbItem.other_idnbi_MenuItem 
+          ? dbItem.other_idnbi_MenuItem.map(child => convertToMenuItem(child))
+          : []
+      };
+    };
 
     // Filter root menu items (those without a parent)
-    const rootMenuItems = menuItems.filter((item) => !item.parent_id);
+    const rootMenuItems = dbMenuItems.filter(item => !item.parent_id);
+    
     // Create a hierarchical structure
-    const menuHierarchy = rootMenuItems.map((item: MenuItem) => {
-      return {
-        ...item,
-        children: item.children.map((child: MenuItem) => ({
-          ...child,
-          children: child.children,
-        })),
-      };
-    });
+    const menuHierarchy: MenuItem[] = rootMenuItems.map(item => convertToMenuItem(item));
 
     return NextResponse.json(menuHierarchy);
   } catch (error) {

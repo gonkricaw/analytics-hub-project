@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
   const mockPrismaClient = {
-    user: {
+    idnbi_User: {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -31,7 +31,7 @@ describe('Auth Service', () => {
   describe('loginUser', () => {
     it('should return null if user is not found', async () => {
       // Arrange
-      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.idnbi_User.findUnique.mockResolvedValue(null);
       const email = 'nonexistent@example.com';
       const password = 'password123';
 
@@ -40,21 +40,21 @@ describe('Auth Service', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+      expect(mockPrisma.idnbi_User.findUnique).toHaveBeenCalledWith({
         where: { email },
-        include: { roles: true },
+        include: { idnbi_UserRole: { include: { idnbi_Role: true } } },
       });
     });
 
     it('should return null if password is incorrect', async () => {
       // Arrange
       const hashedPassword = await createPasswordHash('correctpassword');
-      mockPrisma.user.findUnique.mockResolvedValue({
+      mockPrisma.idnbi_User.findUnique.mockResolvedValue({
         id: '123',
         email: 'user@example.com',
         password: hashedPassword,
         status: 'ACTIVE',
-        roles: [],
+        idnbi_UserRole: [{ idnbi_Role: { name: 'USER' } }],
       });
       const email = 'user@example.com';
       const password = 'wrongpassword';
@@ -75,9 +75,9 @@ describe('Auth Service', () => {
         email: 'user@example.com',
         password: hashedPassword,
         status: 'ACTIVE',
-        roles: [{ name: 'USER' }],
+        idnbi_UserRole: [{ idnbi_Role: { name: 'USER' } }],
       };
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      mockPrisma.idnbi_User.findUnique.mockResolvedValue(mockUser);
       const email = 'user@example.com';
 
       // Act
@@ -87,35 +87,55 @@ describe('Auth Service', () => {
       expect(result).toEqual({
         id: '123',
         email: 'user@example.com',
-        roles: [{ name: 'USER' }],
+        role: 'USER',
+      });
+    });
+
+    it('should update last login information on successful login', async () => {
+      // Arrange
+      const password = 'correctpassword';
+      const hashedPassword = await createPasswordHash(password);
+      const mockUser = {
+        id: '123',
+        email: 'user@example.com',
+        password: hashedPassword,
+        status: 'ACTIVE',
+        idnbi_UserRole: [{ idnbi_Role: { name: 'USER' } }],
+      };
+      mockPrisma.idnbi_User.findUnique.mockResolvedValue(mockUser);
+      const email = 'user@example.com';
+
+      // Act
+      await loginUser(email, password, '192.168.1.1');
+
+      // Assert
+      expect(mockPrisma.idnbi_User.update).toHaveBeenCalledWith({
+        where: { id: '123' },
+        data: {
+          last_login_at: expect.any(Date),
+          last_login_ip: '192.168.1.1',
+        },
       });
     });
   });
 
-  describe('createPasswordHash and verifyPassword', () => {
-    it('should create a hash that can be verified', async () => {
-      // Arrange
-      const password = 'securePassword123';
-
-      // Act
-      const hash = await createPasswordHash(password);
-      const isValid = await verifyPassword(password, hash);
-
-      // Assert
-      expect(isValid).toBe(true);
+  describe('Password Functions', () => {
+    it('createPasswordHash should return a string', async () => {
+      const hash = await createPasswordHash('password123');
+      expect(typeof hash).toBe('string');
     });
 
-    it('should reject incorrect passwords', async () => {
-      // Arrange
-      const password = 'securePassword123';
-      const wrongPassword = 'wrongPassword123';
-
-      // Act
+    it('verifyPassword should return true for matching password', async () => {
+      const password = 'password123';
       const hash = await createPasswordHash(password);
-      const isValid = await verifyPassword(wrongPassword, hash);
+      const result = await verifyPassword(password, hash);
+      expect(result).toBe(true);
+    });
 
-      // Assert
-      expect(isValid).toBe(false);
+    it('verifyPassword should return false for non-matching password', async () => {
+      const hash = await createPasswordHash('password123');
+      const result = await verifyPassword('wrongpassword', hash);
+      expect(result).toBe(false);
     });
   });
 });

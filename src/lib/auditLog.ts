@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Action types for audit logging
@@ -13,6 +14,9 @@ export const AuditActionType = {
   USER_LOGOUT: "USER_LOGOUT",
   PASSWORD_RESET_REQUEST: "PASSWORD_RESET_REQUEST",
   PASSWORD_RESET_COMPLETE: "PASSWORD_RESET_COMPLETE",
+  LOGIN_RATE_LIMIT: "LOGIN_RATE_LIMIT",
+  LOGIN_BLOCKED_IP: "LOGIN_BLOCKED_IP",
+  LOGIN_BLOCKED_USER: "LOGIN_BLOCKED_USER",
 
   // User management actions
   USER_CREATE: "USER_CREATE",
@@ -66,7 +70,7 @@ export interface AuditLogData {
   targetResource: string;
   targetResourceId?: string;
   ipAddress: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -84,12 +88,13 @@ export async function createAuditLog({
     // Create the audit log entry
     const auditLog = await prisma.idnbi_AuditLog.create({
       data: {
-        user_id: userId,
-        action_type: actionType,
-        target_resource: targetResource,
-        target_resource_id: targetResourceId,
+        id: uuidv4(), // Generate UUID for the ID field
+        userId: userId,
+        action: actionType,
+        resource: targetResource,
+        resourceId: targetResourceId,
         ip_address: ipAddress,
-        details: details ? JSON.stringify(details) : null,
+        details: details as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
     });
 

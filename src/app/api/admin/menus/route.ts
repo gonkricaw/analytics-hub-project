@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 // Schema for menu item creation
 const menuItemSchema = z.object({
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       // Create the menu item
       const menuItem = await prisma.idnbi_MenuItem.create({
         data: {
+          id: randomUUID(),
           title: validatedData.title,
           parent_id: validatedData.parent_id,
           order: validatedData.order,
@@ -54,22 +56,28 @@ export async function POST(request: Request) {
           type: validatedData.type,
           target_url: validatedData.target_url,
           content_id: validatedData.content_id,
-          // Create the relationship with roles
-          menuItemRoles: {
-            create: validatedData.roles.map((roleId) => ({
-              role_id: roleId,
-            })),
-          },
+          updated_at: new Date(),
         },
       });
+
+      // Create role associations
+      for (const roleId of validatedData.roles) {
+        await prisma.idnbi_MenuRole.create({
+          data: {
+            menuId: menuItem.id,
+            roleId: roleId,
+          },
+        });
+      }
 
       // Log the action in AuditLog
       await prisma.idnbi_AuditLog.create({
         data: {
-          user_id: session.user.id,
+          id: randomUUID(),
+          userId: session.user.id,
           action: "CREATE",
-          resource_type: "MENU_ITEM",
-          resource_id: menuItem.id,
+          resource: "MENU_ITEM",
+          resourceId: menuItem.id,
           details: JSON.stringify(menuItem),
         },
       });

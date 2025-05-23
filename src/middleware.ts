@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-// This function can be marked `async` if using `await` inside
+// Using explicit ES Module export syntax
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
@@ -58,5 +58,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Specify which paths this middleware will run on
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Match all paths except api routes, static files, images, and favicon
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    // Also match the root path
+    "/"
+  ],
 };

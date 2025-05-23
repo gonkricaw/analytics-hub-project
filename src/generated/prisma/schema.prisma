@@ -8,204 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model
-model idnbi_User {
-  id                    String    @id @default(uuid())
-  name                  String
-  email                 String    @unique
-  password              String
-  status                String    @default("INACTIVE") // INACTIVE, ACTIVE, SUSPENDED
-  profile_photo_url     String?
-  last_login_at         DateTime?
-  last_login_ip         String?
-  failed_login_attempts Int       @default(0)
-  is_ip_blocked         Boolean   @default(false)
-  terms_accepted_at     DateTime?
-  invited_at            DateTime?
-  registered_at         DateTime  @default(now())
-  temp_password_flag    Boolean   @default(false)
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-
-  // Relations
-  roles           idnbi_UserRole[]
-  created_content idnbi_Content[]
-  notifications   idnbi_UserNotificationStatus[]
-  password_reset  idnbi_PasswordResetToken[]
-  audit_logs      idnbi_AuditLog[]
-}
-
-// Role model
-model idnbi_Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  // Relations
-  users       idnbi_UserRole[]
-  permissions idnbi_RolePermission[]
-  menus       idnbi_MenuRole[]
-}
-
-// Join table for User-Role
-model idnbi_UserRole {
-  userId     String
-  roleId     String
-  created_at DateTime @default(now())
-
-  // Relations
-  user idnbi_User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role idnbi_Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  // Composite primary key
-  @@id([userId, roleId])
-}
-
-// Permission model
-model idnbi_Permission {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  // Relations
-  roles idnbi_RolePermission[]
-}
-
-// Join table for Role-Permission
-model idnbi_RolePermission {
-  roleId       String
-  permissionId String
-  created_at   DateTime @default(now())
-
-  // Relations
-  role       idnbi_Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission idnbi_Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  // Composite primary key
-  @@id([roleId, permissionId])
-}
-
-// Terms & Conditions model
-model idnbi_TermsAndConditions {
-  id           String    @id @default(uuid())
-  version      String    @unique
-  content_html String    @db.Text
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  published_at DateTime?
-}
-
-// Content model
-model idnbi_Content {
-  id            String   @id @default(uuid())
-  title         String
-  slug          String   @unique
-  type          String   @default("html") // html, image, youtube, document, external_link_embed
-  content_data  String   @db.Text
-  created_by_id String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  // Relations
-  created_by idnbi_User? @relation(fields: [created_by_id], references: [id], onDelete: SetNull)
-}
-
-// Menu Item model
-model idnbi_MenuItem {
-  id         String   @id @default(uuid())
-  title      String
-  parent_id  String?
-  order      Int      @default(0)
-  icon_class String?
-  type       String // link_internal, link_external, content, submenu
-  target_url String? // For internal/external links
-  content_id String? // For content type
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // Relations
-  parent   idnbi_MenuItem?  @relation("MenuHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
-  children idnbi_MenuItem[] @relation("MenuHierarchy")
-  roles    idnbi_MenuRole[]
-
-  // Unique constraint
-  @@unique([title, parent_id])
-}
-
-// Join table for Menu-Role
-model idnbi_MenuRole {
-  menuId     String
-  roleId     String
-  created_at DateTime @default(now())
-
-  // Relations
-  menu idnbi_MenuItem @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  role idnbi_Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  // Composite primary key
-  @@id([menuId, roleId])
-}
-
-// Notification model
-model idnbi_Notification {
-  id         String   @id @default(uuid())
-  title      String
-  message    String   @db.Text
-  type       String   @default("system") // system, alert, info
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // Relations
-  user_statuses idnbi_UserNotificationStatus[]
-}
-
-// Join table for User-Notification
-model idnbi_UserNotificationStatus {
-  userId         String
-  notificationId String
-  read           Boolean   @default(false)
-  read_at        DateTime?
-  created_at     DateTime  @default(now())
-
-  // Relations
-  user         idnbi_User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notification idnbi_Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-
-  // Composite primary key
-  @@id([userId, notificationId])
-}
-
-// Email Template model
-model idnbi_EmailTemplate {
-  id         String   @id @default(uuid())
-  name       String   @unique // user_invitation, password_reset, system_warning
-  subject    String
-  content    String   @db.Text
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-// System Configuration model
-model idnbi_SystemConfiguration {
-  id                        String   @id @default("1") // Single record
-  app_name                  String   @default("Indonet Analytics Hub")
-  logo_url                  String?
-  login_bg_url              String?
-  footer_text               String?
-  default_profile_photo_url String?
-  jumbotron_content         String?  @db.Text // JSON
-  marquee_content           String?
-  created_at                DateTime @default(now())
-  updated_at                DateTime @updatedAt
-}
-
-// Audit Log model
 model idnbi_AuditLog {
-  id         String   @id @default(uuid())
+  id         String      @id
   userId     String?
   action     String
   resource   String?
@@ -213,21 +17,189 @@ model idnbi_AuditLog {
   details    Json?
   ip_address String?
   user_agent String?
-  created_at DateTime @default(now())
-
-  // Relations
-  user idnbi_User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  created_at DateTime    @default(now())
+  idnbi_User idnbi_User? @relation(fields: [userId], references: [id])
 }
 
-// Password Reset Token model
-model idnbi_PasswordResetToken {
-  id         String   @id @default(uuid())
-  userId     String
-  token      String   @unique
-  expires_at DateTime
-  is_used    Boolean  @default(false)
-  created_at DateTime @default(now())
+model idnbi_Content {
+  id            String      @id
+  title         String
+  slug          String      @unique
+  type          String      @default("html")
+  content_data  String
+  created_by_id String?
+  created_at    DateTime    @default(now())
+  updated_at    DateTime
+  idnbi_User    idnbi_User? @relation(fields: [created_by_id], references: [id])
+}
 
-  // Relations
-  user idnbi_User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model idnbi_EmailTemplate {
+  id         String   @id
+  name       String   @unique
+  subject    String
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime
+}
+
+model idnbi_MenuItem {
+  id                   String           @id
+  title                String
+  parent_id            String?
+  order                Int              @default(0)
+  icon_class           String?
+  type                 String
+  target_url           String?
+  content_id           String?
+  created_at           DateTime         @default(now())
+  updated_at           DateTime
+  idnbi_MenuItem       idnbi_MenuItem?  @relation("idnbi_MenuItemToidnbi_MenuItem", fields: [parent_id], references: [id])
+  other_idnbi_MenuItem idnbi_MenuItem[] @relation("idnbi_MenuItemToidnbi_MenuItem")
+  idnbi_MenuRole       idnbi_MenuRole[]
+
+  @@unique([title, parent_id])
+}
+
+model idnbi_MenuRole {
+  menuId         String
+  roleId         String
+  created_at     DateTime       @default(now())
+  idnbi_MenuItem idnbi_MenuItem @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  idnbi_Role     idnbi_Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([menuId, roleId])
+}
+
+model idnbi_Notification {
+  id                           String                         @id
+  title                        String
+  message                      String
+  type                         String                         @default("system")
+  created_at                   DateTime                       @default(now())
+  updated_at                   DateTime
+  idnbi_UserNotificationStatus idnbi_UserNotificationStatus[]
+}
+
+model idnbi_PasswordResetToken {
+  id         String     @id
+  userId     String
+  token      String     @unique
+  expires_at DateTime
+  is_used    Boolean    @default(false)
+  created_at DateTime   @default(now())
+  idnbi_User idnbi_User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model idnbi_Permission {
+  id                   String                 @id
+  name                 String                 @unique
+  description          String?
+  created_at           DateTime               @default(now())
+  updated_at           DateTime
+  idnbi_RolePermission idnbi_RolePermission[]
+}
+
+model idnbi_Role {
+  id                   String                 @id
+  name                 String                 @unique
+  description          String?
+  created_at           DateTime               @default(now())
+  updated_at           DateTime
+  idnbi_MenuRole       idnbi_MenuRole[]
+  idnbi_RolePermission idnbi_RolePermission[]
+  idnbi_UserRole       idnbi_UserRole[]
+}
+
+model idnbi_RolePermission {
+  roleId           String
+  permissionId     String
+  created_at       DateTime         @default(now())
+  idnbi_Permission idnbi_Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  idnbi_Role       idnbi_Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model idnbi_SystemConfiguration {
+  id                        String   @id @default("1")
+  app_name                  String   @default("Indonet Analytics Hub")
+  logo_url                  String?
+  login_bg_url              String?
+  footer_text               String?
+  default_profile_photo_url String?
+  jumbotron_content         String?
+  marquee_content           String?
+  created_at                DateTime @default(now())
+  updated_at                DateTime
+}
+
+model idnbi_TermsAndConditions {
+  id           String    @id
+  version      String    @unique
+  content_html String
+  created_at   DateTime  @default(now())
+  updated_at   DateTime
+  published_at DateTime?
+}
+
+model idnbi_User {
+  id                           String                         @id
+  name                         String
+  email                        String                         @unique
+  password                     String
+  status                       String                         @default("INACTIVE")
+  profile_photo_url            String?
+  last_login_at                DateTime?
+  last_login_ip                String?
+  failed_login_attempts        Int                            @default(0)
+  is_ip_blocked                Boolean                        @default(false)
+  terms_accepted_at            DateTime?
+  invited_at                   DateTime?
+  registered_at                DateTime                       @default(now())
+  temp_password_flag           Boolean                        @default(false)
+  created_at                   DateTime                       @default(now())
+  updated_at                   DateTime
+  idnbi_AuditLog               idnbi_AuditLog[]
+  idnbi_Content                idnbi_Content[]
+  idnbi_PasswordResetToken     idnbi_PasswordResetToken[]
+  idnbi_UserNotificationStatus idnbi_UserNotificationStatus[]
+  idnbi_UserRole               idnbi_UserRole[]
+}
+
+model idnbi_UserNotificationStatus {
+  userId             String
+  notificationId     String
+  read               Boolean            @default(false)
+  read_at            DateTime?
+  created_at         DateTime           @default(now())
+  idnbi_Notification idnbi_Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  idnbi_User         idnbi_User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, notificationId])
+}
+
+model idnbi_UserRole {
+  userId     String
+  roleId     String
+  created_at DateTime   @default(now())
+  idnbi_Role idnbi_Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  idnbi_User idnbi_User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model idnbi_FailedLoginAttemptLog {
+  id         String   @id @default(uuid())
+  email      String
+  ip_address String
+  count      Int      @default(1)
+  timestamp  DateTime @default(now())
+
+  @@unique([email, ip_address])
+}
+
+model idnbi_IPBlocklist {
+  ip_address    String   @id
+  blocked_until DateTime
+  created_at    DateTime @default(now())
 }
